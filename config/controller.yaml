@@ -1,0 +1,21 @@
+emotion_controller_node:
+  ros__parameters:
+    preview_only: true
+    use_sim_time: false
+    rate_hz: 20.0
+    confidence_threshold: 0.55
+    stable_seconds: 0.5
+    rearm_seconds: 0.75
+    observation_timeout: 0.75
+    odom_timeout: 0.5
+    linear_speed: 0.10
+    reverse_speed: 0.08
+    angular_speed: 0.40
+    arc_radius: 0.40
+    arc_angle: 1.0471975511965976
+    travel_distance: 0.20
+    distance_tolerance: 0.008
+    angle_tolerance: 0.025
+    settle_seconds: 0.30
+    segment_timeout: 30.0
+
