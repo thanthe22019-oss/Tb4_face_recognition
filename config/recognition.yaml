@@ -1,0 +1,10 @@
+emotion_recognition_node:
+  ros__parameters:
+    camera_index: 0
+    width: 640
+    height: 480
+    capture_rate_hz: 20.0
+    inference_rate_hz: 5.0
+    show_window: true
+    mirror: true
+
