@@ -1,0 +1,91 @@
+% Preamble dựa trên mẫu báo cáo UET/TurtleBot 4 của các bài thực hành trước.
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T5]{fontenc}
+\else
+  \usepackage{fontspec}
+  \setmainfont{texgyretermes}[
+    Extension=.otf,
+    UprightFont=*-regular,
+    BoldFont=*-bold,
+    ItalicFont=*-italic,
+    BoldItalicFont=*-bolditalic]
+  \setsansfont{texgyreheros}[
+    Extension=.otf,
+    UprightFont=*-regular,
+    BoldFont=*-bold,
+    ItalicFont=*-italic,
+    BoldItalicFont=*-bolditalic]
+  \setmonofont{texgyrecursor}[
+    Extension=.otf,
+    UprightFont=*-regular,
+    BoldFont=*-bold,
+    ItalicFont=*-italic,
+    BoldItalicFont=*-bolditalic]
+\fi
+\usepackage[vietnamese]{babel}
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.5cm,right=2.2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{fvextra}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{array,booktabs,multirow,longtable}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,positioning,shapes.geometric}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{setspace}
+
+\setstretch{1.08}
+\setlength{\parindent}{1cm}
+\setlength{\parskip}{0.25em}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+\urlstyle{same}
+
+\DefineVerbatimEnvironment{svcode}{Verbatim}{
+  breaklines=true,
+  breakanywhere=true,
+  fontsize=\footnotesize,
+  frame=single,
+  rulecolor=\color{black!20},
+  xleftmargin=1em
+}
+
+% Nếu ảnh chưa tồn tại, báo cáo vẫn biên dịch và hiển thị tên file cần bổ sung.
+\newcommand{\reportfigure}[2]{%
+\begin{figure}[H]
+\centering
+\IfFileExists{images/#1}{%
+  \includegraphics[width=0.92\textwidth,height=0.52\textheight,keepaspectratio]{#1}%
+}{%
+  \fbox{\begin{minipage}[c][5.2cm][c]{0.86\textwidth}
+    \centering
+    {\Large\bfseries ẢNH MINH CHỨNG CHƯA BỔ SUNG}\par\vspace{0.4cm}
+    Lưu ảnh đúng tên:\par
+    \nolinkurl{images/#1}
+  \end{minipage}}%
+}
+\caption{#2}
+\end{figure}
+}
+
+\newcommand{\pending}[1]{%
+  \textcolor{orange!80!black}{\textbf{PENDING:} #1}%
+}
+\newcommand{\passstatus}[1]{%
+  \textcolor{green!45!black}{\textbf{PASS:} #1}%
+}
+
+\providecommand{\univA}{TRƯỜNG ĐẠI HỌC CÔNG NGHỆ}
+\providecommand{\univB}{KHOA ĐIỆN TỬ VIỄN THÔNG}
+\providecommand{\taskVN}{Nhận diện biểu cảm khuôn mặt và điều khiển TurtleBot 4}
+\providecommand{\memberOne}{Thân Thế Trí Dũng}
+\providecommand{\memberOneID}{23020730}
+\providecommand{\studentClass}{QH-2023-I/CQ-E-RE}
+\providecommand{\city}{Hà Nội}
+\providecommand{\yeartext}{2026}

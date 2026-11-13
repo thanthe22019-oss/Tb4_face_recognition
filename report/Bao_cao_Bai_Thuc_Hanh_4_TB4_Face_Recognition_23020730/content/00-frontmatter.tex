@@ -1,0 +1,58 @@
+\newgeometry{top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm}
+\begin{titlepage}
+\thispagestyle{empty}
+
+\begin{tikzpicture}[overlay,remember picture]
+  \draw[line width=2pt]
+    ($(current page.north west)+(1.8cm,-1.8cm)$) rectangle
+    ($(current page.south east)+(-1.8cm,1.8cm)$);
+  \draw[line width=0.8pt]
+    ($(current page.north west)+(2.0cm,-2.0cm)$) rectangle
+    ($(current page.south east)+(-2.0cm,2.0cm)$);
+\end{tikzpicture}
+
+\centering
+\vspace*{0.45cm}
+{\bfseries\fontsize{12}{14}\selectfont \univA\par}
+{\bfseries\fontsize{12}{14}\selectfont \univB\par}
+
+\vspace{0.8cm}
+\IfFileExists{Logo_UET.png}{%
+  \includegraphics[width=0.22\textwidth]{Logo_UET.png}\par
+}{%
+  \fbox{\parbox[c][3.2cm][c]{4cm}{\centering LOGO UET}}\par
+}
+
+\vspace{0.7cm}
+{\bfseries\fontsize{16}{20}\selectfont BÁO CÁO BÀI THỰC HÀNH\par}
+{\bfseries\fontsize{16}{20}\selectfont TƯƠNG TÁC NGƯỜI--MÁY\par}
+
+\vspace{0.4cm}
+\begin{minipage}{0.84\textwidth}
+  \centering
+  {\bfseries\fontsize{13}{17}\selectfont Đề tài: ``\taskVN''\par}
+\end{minipage}
+
+\vspace{0.8cm}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|>{\bfseries}p{0.34\textwidth}|p{0.45\textwidth}|}
+\hline
+Họ và tên & \memberOne \\
+\hline
+Mã sinh viên & \memberOneID \\
+\hline
+Lớp & \studentClass \\
+\hline
+Hệ điều hành & Ubuntu 22.04 \\
+\hline
+Nền tảng & ROS 2 Humble, OpenCV, FER/TFLite \\
+\hline
+Robot & TurtleBot 4 Standard / Simulator \\
+\hline
+\end{tabular}
+\renewcommand{\arraystretch}{1.0}
+
+\vfill
+{\bfseries\fontsize{12}{14}\selectfont \MakeUppercase{\city} -- \yeartext\par}
+\end{titlepage}
+\restoregeometry
