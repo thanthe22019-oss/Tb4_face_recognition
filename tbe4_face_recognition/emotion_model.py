@@ -64,14 +64,19 @@ class FerEmotionModel:
         if not isinstance(face, dict) or set(face) != {'box', 'emotions'}:
             raise ValueError('each FER face must contain box and emotions')
         box = face['box']
+        if isinstance(box, (str, bytes, dict)):
+            raise ValueError('FER box must contain four integers')
+        try:
+            box_values = tuple(box)
+        except TypeError as error:
+            raise ValueError('FER box must contain four integers') from error
         if (
-            not isinstance(box, (list, tuple))
-            or len(box) != 4
+            len(box_values) != 4
             or not all(isinstance(value, Integral) and not isinstance(value, bool)
-                       for value in box)
+                       for value in box_values)
         ):
             raise ValueError('FER box must contain four integers')
-        normalized_box = tuple(int(value) for value in box)
+        normalized_box = tuple(int(value) for value in box_values)
         if normalized_box[2] <= 0 or normalized_box[3] <= 0:
             raise ValueError('FER box width and height must be positive')
 

@@ -2,6 +2,7 @@
 
 import math
 
+import numpy as np
 import pytest
 
 from tbe4_face_recognition.emotion_model import (
@@ -44,6 +45,19 @@ def test_adapter_selects_highest_emotion_and_preserves_box():
     assert faces == [DetectedFace((12, 8, 60, 80), 'happy', 0.91)]
     assert make_observation(faces, 'abc12345', 7).emotion == 'happy'
     assert make_observation(faces, 'abc12345', 7).confidence == 0.91
+
+
+def test_adapter_accepts_opencv_numpy_box_from_real_fer_detector():
+    detector = FakeDetector([
+        {
+            'box': np.array([12, 8, 60, 80], dtype=np.int32),
+            'emotions': {'happy': 0.91, 'neutral': 0.09},
+        }
+    ])
+
+    faces = FerEmotionModel(detector).analyze(object())
+
+    assert faces == [DetectedFace((12, 8, 60, 80), 'happy', 0.91)]
 
 
 @pytest.mark.parametrize(
