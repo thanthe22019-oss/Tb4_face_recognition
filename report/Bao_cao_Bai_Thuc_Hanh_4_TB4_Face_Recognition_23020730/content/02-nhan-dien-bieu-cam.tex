@@ -1,1 +1,91 @@
-% Nội dung được bổ sung ở Task 2.
+\clearpage
+\section*{2. Nhận diện biểu cảm khuôn mặt}
+\addcontentsline{toc}{section}{2. Nhận diện biểu cảm khuôn mặt}
+
+\subsection*{2.1. Mô hình FER và nhãn cảm xúc}
+
+Hệ thống sử dụng thư viện FER \cite{ferlibrary}, dựa trên bài toán nhận diện
+biểu cảm FER2013 \cite{fer2013}. Detector được khởi tạo bằng:
+
+\begin{svcode}
+FER(use_tflite=True, mtcnn=False)
+\end{svcode}
+
+Chế độ TensorFlow Lite \cite{tensorflowlite} giảm phần phụ thuộc và phù hợp với
+inference CPU. MTCNN không cần thiết cho bài này; detector Haar cascade mặc
+định của FER được dùng để tìm khuôn mặt. Bảy nhãn thô của mô hình gồm
+\texttt{angry}, \texttt{disgust}, \texttt{fear}, \texttt{happy},
+\texttt{sad}, \texttt{surprise} và \texttt{neutral}. Trong đó
+\texttt{disgust} không có hành động tương ứng nên được chuẩn hóa thành trạng
+thái không an toàn và yêu cầu dừng.
+
+Adapter \texttt{FerEmotionModel} nhận output công khai của FER, kiểm tra box
+$(x,y,w,h)$, kiểm tra toàn bộ score hữu hạn trong $[0,1]$, rồi chọn nhãn có
+score lớn nhất. FER thực tế có thể trả bounding box OpenCV dưới dạng
+\texttt{numpy.ndarray}; adapter chuyển từng phần tử nguyên về tuple Python
+trước khi tạo \texttt{DetectedFace}. Trường hợp này đã được bổ sung regression
+test sau lần chạy webcam thật.
+
+\subsection*{2.2. Pipeline webcam theo thời gian thực}
+
+Node nhận diện mở camera bằng OpenCV \cite{opencv} với backend V4L2, mặc định
+là \path{/dev/video0}, độ phân giải yêu cầu $640\times480$ và buffer size bằng
+1. Frame được mirror trước khi inference và hiển thị để thao tác giống gương.
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0.2em]
+  \item Timer capture chạy ở 20~Hz và đọc frame mới nhất từ webcam.
+  \item \texttt{InferenceScheduler} cho phép inference ở 5~Hz; sequence chỉ
+        tăng sau khi một lần inference hoàn thành.
+  \item FER trả danh sách khuôn mặt và score; adapter tạo danh sách
+        \texttt{DetectedFace} đã xác thực.
+  \item Nếu đúng một khuôn mặt, observation mang nhãn và confidence của khuôn
+        mặt đó. Nếu không có hoặc có nhiều khuôn mặt, observation mang
+        \texttt{unknown}, confidence 0 và đúng \texttt{face\_count}.
+  \item Observation mới được publish lên \path{/emotion_observation}; frame
+        vẫn có thể hiển thị ở 20~Hz giữa hai lần inference.
+\end{enumerate}
+
+Cách tách capture và inference tránh tăng sequence bằng các frame hiển thị lặp
+lại. Nếu FER bị treo, node không thể phát observation mới; watchdog 0,75~s ở
+controller sẽ đưa vận tốc về không thay vì giữ lệnh cũ.
+
+\subsection*{2.3. Overlay và phản hồi trạng thái robot}
+
+Trên bản sao của frame, node vẽ box đã clip theo kích thước ảnh, nhãn FER,
+confidence, số khuôn mặt và observation mới nhất. Dòng trạng thái robot lấy từ
+\path{/emotion_behavior_status}, hiển thị state, biểu cảm đã ổn định, hành động,
+reason và phần trăm tiến độ. Frame đầu vào không bị sửa và không có code path
+ghi ảnh hoặc video xuống đĩa.
+
+\reportfigure{02_overlay_nhan_dien.png}{Cửa sổ OpenCV hiển thị một khuôn mặt, nhãn FER, confidence, stable emotion và trạng thái robot.}
+\reportfigure{03_sau_bieu_cam.png}{Bộ minh chứng sáu biểu cảm happy, sad, neutral, angry, surprise và fear trong điều kiện ánh sáng thử nghiệm.}
+\reportfigure{04_topics_observation_status.png}{Hai topic JSON /emotion\_observation và /emotion\_behavior\_status trong một phiên chạy.}
+
+\subsection*{2.4. Môi trường AI độc lập}
+
+TensorFlow, FER và OpenCV pip không được cài vào Python hệ thống của ROS.
+Script \path{scripts/setup_face_venv.sh} tạo \path{.venv-face} với
+\texttt{--system-site-packages} để vẫn nhìn thấy \texttt{rclpy}, sau đó cài
+các phiên bản được pin: NumPy~1.26.4, OpenCV contrib~4.10.0.84,
+Pillow~10.4.0, Requests~2.32.3, setuptools~70.3.0 và
+TensorFlow CPU~2.15.1. FER~25.10.3 được cài bằng \texttt{--no-deps} để tránh
+kéo nhánh MTCNN/PyTorch không sử dụng.
+
+Launch file chỉ prefix node nhận diện bằng Python của virtualenv. Controller
+vẫn chạy bằng ROS Python bình thường. Biên giao tiếp giữa hai môi trường chỉ
+gồm message chuẩn, vì vậy dependency AI không can thiệp vào vòng điều khiển.
+
+\subsection*{2.5. Xử lý lỗi và quyền riêng tư}
+
+Khi camera mất frame, node phát một observation \texttt{unknown} mới nếu
+publisher còn hoạt động rồi thoát lỗi; controller có cả tín hiệu dừng tức thời
+và watchdog dự phòng. Nhấn \texttt{Q}, Ctrl+C hoặc ROS shutdown sẽ release
+camera và đóng cửa sổ. Lần thử đầu tiên trên Lenovo Legion 5 cho thấy camera
+bị tắt bằng E-shutter nên không tồn tại \path{/dev/video0}; sau khi bật camera,
+node mở webcam thành công. Một smoke test headless 12~giây đã xác nhận FER xử
+lý frame thật mà không còn crash do kiểu bounding box.
+
+Bài thực hành chỉ suy luận biểu cảm; không nhận diện danh tính, tuổi, giới tính
+hoặc chủng tộc. Hệ thống không tự lưu frame, crop mặt hay video. Ảnh minh chứng
+có khuôn mặt chỉ được thêm khi người thực hiện chủ động chọn và kiểm tra nội
+dung.
