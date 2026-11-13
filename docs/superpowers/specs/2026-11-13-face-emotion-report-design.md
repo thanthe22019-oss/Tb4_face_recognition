@@ -41,11 +41,10 @@ dung kỹ thuật phải được viết lại cho bài nhận diện biểu c�
 
 ## Bằng chứng được phép sử dụng
 
-- Có thể ghi nhận: commit `6d8cb3f`, 100 pytest pass, colcon build thành công,
-  colcon test có 100 test, 0 lỗi, 0 thất bại, 0 bỏ qua; package prefix và ba
+- Có thể ghi nhận: commit `44c841f`, 101 pytest pass, colcon build thành công,
+  colcon test có 101 test, 0 lỗi, 0 thất bại, 0 bỏ qua; package prefix và ba
   launch description đã được ROS 2 nạp bằng `--show-args`.
-- Phải ghi rõ các kết quả trên thuộc nhánh `feature/face-emotion-control` nếu
-  báo cáo được viết trước khi merge vào `main`.
+- Các kết quả trên đã được xác minh trên nhánh `main` cục bộ.
 - Không được tuyên bố FER đã nhận đúng sáu biểu cảm, webcam đã chạy ổn định,
   robot đã hoàn thành quỹ đạo hoặc các cơ chế dừng đã qua nghiệm thu simulator
   khi chưa có ảnh/video/log thật.
@@ -87,4 +86,3 @@ xạ hành động và bằng chứng nghiệm thu.
 - Kết quả tự động và kết quả thủ công được phân biệt rõ.
 - Ảnh chưa có vẫn tạo placeholder biên dịch được và có hướng dẫn thay thế.
 - Không sửa mã ROS 2, cấu hình vận hành hoặc test của ứng dụng khi viết báo cáo.
-

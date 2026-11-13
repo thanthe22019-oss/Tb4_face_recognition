@@ -16,7 +16,7 @@
 - Treat `/home/alex/Interaction/tb4_nav2/report/Bao_cao_TurtleBot4_SLAM_Nav2_23020730/` as read-only.
 - Write report deliverables only under `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/`.
 - Do not modify ROS/Python application source, YAML, launch files, tests, or runtime scripts while producing the report.
-- Use commit `6d8cb3f` and fresh verification output as the initial evidence baseline; update both if implementation changes before report generation.
+- Use commit `44c841f` and fresh verification output as the initial evidence baseline; update both if implementation changes before report generation.
 - State only verified automated results and mark every unverified webcam/simulator result with `\pending`.
 - Do not store raw webcam frames, face crops, private video, virtualenv content, credentials, or unrelated personal data.
 - Keep repository/video URLs as placeholders until real public links exist.
@@ -192,7 +192,7 @@ git branch --show-current
 git rev-parse --short HEAD
 ```
 
-Expected baseline at plan creation: 100 pytest passed; colcon 100 tests, 0 errors, 0 failures, 0 skipped; branch `feature/face-emotion-control`; commit `6d8cb3f`.
+Expected baseline after live-camera normalization: 101 pytest passed; colcon 101 tests, 0 errors, 0 failures, 0 skipped; branch `main`; commit `44c841f`.
 
 - [ ] **Step 2: Write exact setup and run commands**
 
