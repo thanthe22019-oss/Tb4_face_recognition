@@ -1,0 +1,9 @@
+/build/
+/install/
+/log/
+/.pytest_cache/
+/.venv-face/
+/.superpowers/
+__pycache__/
+*.py[cod]
+
