@@ -1,1 +1,109 @@
-% Nội dung được bổ sung ở Task 3.
+\clearpage
+\section*{3. Lọc biểu cảm và state machine one-shot}
+\addcontentsline{toc}{section}{3. Lọc biểu cảm và state machine one-shot}
+
+\subsection*{3.1. Tại sao cần lọc theo thời gian?}
+
+Output của mô hình cảm xúc có thể thay đổi giữa hai frame liên tiếp do ánh
+sáng, góc mặt hoặc biểu cảm chuyển tiếp. Nếu mỗi nhãn được nối trực tiếp với
+\path{/cmd_vel}, robot có thể đổi hướng liên tục. Module
+\texttt{EmotionFilter} vì vậy tách ba khái niệm: observation mới từ transport,
+ứng viên đang tích lũy thời gian và biểu cảm đã ổn định.
+
+Một observation chỉ hợp lệ để làm mới heartbeat khi sequence tăng nghiêm ngặt
+trong session hiện tại. Sequence trùng hoặc lùi sinh reason
+\texttt{invalid\_sequence}; session mới sinh reason
+\texttt{recognition\_restarted}, xóa candidate/stable cũ và buộc dừng. Đồng hồ
+dùng \texttt{time.monotonic()} nên không phụ thuộc simulation time.
+
+\subsection*{3.2. Chuẩn hóa và các ngưỡng}
+
+Filter chuẩn hóa theo thứ tự an toàn sau:
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0.15em]
+  \item \texttt{face\_count=0}: \texttt{unknown/no\_face};
+  \item \texttt{face\_count} khác 1: \texttt{unknown/multiple\_faces};
+  \item nhãn \texttt{disgust}: \texttt{unknown/unsupported\_emotion};
+  \item nhãn ngoài contract: \texttt{unknown/unknown\_emotion};
+  \item confidence dưới 0,55: \texttt{unknown/low\_confidence};
+  \item còn lại: giữ nhãn điều khiển.
+\end{enumerate}
+
+Mất mặt, nhiều mặt, confidence thấp và nhãn không hỗ trợ tạo yêu cầu dừng ngay,
+đồng thời vẫn cho \texttt{unknown} tích lũy đủ thời gian để re-arm. Các ngưỡng
+mặc định được đặt trong \path{config/controller.yaml}:
+
+\begin{center}
+\begin{tabular}{@{}p{0.38\textwidth}p{0.18\textwidth}p{0.36\textwidth}@{}}
+\toprule
+\textbf{Tham số} & \textbf{Giá trị} & \textbf{Ý nghĩa} \\ \midrule
+\texttt{confidence\_threshold} & 0,55 & Confidence tối thiểu cho một mặt. \\
+\texttt{stable\_seconds} & 0,50~s & Thời gian ổn định của biểu cảm hành động. \\
+\texttt{rearm\_seconds} & 0,75~s & Thời gian neutral/unknown để arm lại. \\
+\texttt{observation\_timeout} & 0,75~s & Khoảng tối đa không có sequence mới. \\
+\texttt{odom\_timeout} & 0,50~s & Tuổi tối đa của odometry. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Khi nhãn chuẩn hóa đổi, candidate và thời điểm bắt đầu được đặt lại. Một nhãn
+non-neutral trở thành stable sau 0,5~s liên tục. Neutral và unknown cần 0,75~s
+vì chúng còn đóng vai trò xác nhận người dùng đã rời biểu cảm trước đó để hệ
+thống được phép nhận một trigger mới.
+
+\subsection*{3.3. State machine one-shot}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  state/.style={draw,rounded corners,minimum width=3.2cm,minimum height=1.1cm,
+                align=center,fill=blue!6},
+  arrow/.style={-{Latex[length=2.5mm]},thick},
+  label/.style={align=center,font=\small}
+]
+  \node[state] (disarmed) {DISARMED\\chờ re-arm};
+  \node[state,right=4.1cm of disarmed] (armed) {ARMED\\sẵn sàng nhận trigger};
+  \node[state,below=2.4cm of armed] (executing) {EXECUTING\\đang chạy profile};
+
+  \draw[arrow] (disarmed) -- node[label,above]
+    {neutral/unknown\\ổn định 0,75 s} (armed);
+  \draw[arrow] (armed) -- node[label,right]
+    {biểu cảm hành động\\ổn định 0,5 s} (executing);
+  \draw[arrow] (executing) -- node[label,below left]
+    {hoàn tất, lỗi, timeout\\hoặc biểu cảm khác} (disarmed);
+  \draw[arrow] (armed) to[bend left=40] node[label,above]
+    {preview hoặc thiếu odom\\trigger vẫn bị tiêu thụ} (disarmed);
+  \draw[arrow] (executing) to[bend left=28] node[label,right]
+    {neutral/unknown\\hoặc stop reason} (armed);
+\end{tikzpicture}
+\caption{State machine một lần kích hoạt, không xếp hàng hành động.}
+\end{figure}
+
+Ánh xạ biểu cảm non-neutral được lưu cố định trong
+\texttt{ACTION\_BY\_EMOTION}. Khi state là \texttt{ARMED} và filter báo một
+stable emotion mới, state machine trả về đúng một \texttt{start\_action}. Khi
+profile hoàn thành, state trở lại \texttt{DISARMED}; giữ nguyên nét mặt không
+thể tự chạy lần nữa. Hệ thống không lưu action chờ, vì vậy một biểu cảm khác
+trong lúc robot chạy chỉ hủy profile hiện tại sau khi nó ổn định, không nối
+tiếp thành chuỗi ngoài ý muốn.
+
+Neutral là lệnh dừng và re-arm. Unknown an toàn cũng có thể re-arm sau 0,75~s,
+giúp người dùng chỉ cần rời khỏi camera giữa hai lần điều khiển. Payload lỗi,
+session mới và timeout đều hủy chuyển động nhưng không tự kích hoạt hành động
+khi dữ liệu quay trở lại.
+
+\subsection*{3.4. Preview và odometry chưa sẵn sàng}
+
+Trong preview, filter và state machine vẫn chạy để người dùng quan sát đúng
+nhãn/stable state. Khi một biểu cảm đủ điều kiện kích hoạt, reason chuyển thành
+\texttt{preview\_completed}; trigger bị tiêu thụ nhưng controller chỉ publish
+zero Twist. Người dùng phải dừng phiên và truyền
+\texttt{preview\_only:=false} để cho phép chuyển động.
+
+Nếu motion được bật nhưng \path{/odom} chưa sẵn sàng, trigger bị từ chối với
+reason \texttt{odometry\_unavailable} và cũng bị tiêu thụ. Khi odometry xuất
+hiện sau đó, action cũ không được tự chạy; cần neutral/unknown re-arm rồi tạo
+biểu cảm mới. Quy tắc này loại bỏ chuyển động bất ngờ sau khi simulator vừa
+khởi động.
+
+\reportfigure{05_preview_zero_cmd_vel.png}{Preview nhận trigger nhưng /cmd\_vel vẫn bằng zero; status hiển thị preview\_completed.}

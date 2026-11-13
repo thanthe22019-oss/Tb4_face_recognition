@@ -1,1 +1,104 @@
-% Nội dung được bổ sung ở Task 3.
+\clearpage
+\section*{4. Điều khiển chuyển động bằng odometry}
+\addcontentsline{toc}{section}{4. Điều khiển chuyển động bằng odometry}
+
+\subsection*{4.1. Ánh xạ sáu biểu cảm}
+
+Mọi hành động non-neutral đều dùng phản hồi \path{/odom}; không có profile chạy
+chỉ bằng thời gian. Controller publish Twist ở 20~Hz và phát zero Twist trong
+mọi state không thực thi.
+
+\begin{longtable}{@{}p{0.16\textwidth}p{0.19\textwidth}p{0.57\textwidth}@{}}
+\toprule
+\textbf{Biểu cảm} & \textbf{Action} & \textbf{Profile mặc định} \\ \midrule
+\endfirsthead
+\toprule \textbf{Biểu cảm} & \textbf{Action} & \textbf{Profile mặc định} \\ \midrule
+\endhead
+Happy & \texttt{arc\_left} & Cong trái bán kính 0,40~m, đổi hướng $+60^\circ$. \\
+Sad & \texttt{arc\_right} & Cong phải bán kính 0,40~m, đổi hướng $-60^\circ$. \\
+Neutral & stop & Hủy profile và publish zero Twist. \\
+Angry & \texttt{reverse} & Lùi 0,20~m, tốc độ tối đa 0,08~m/s. \\
+Surprise & \texttt{rotate\_full} & Xoay trái $2\pi$ rad, tối đa 0,40~rad/s. \\
+Fear & \texttt{forward} & Tiến 0,20~m, tốc độ tối đa 0,10~m/s. \\
+\bottomrule
+\end{longtable}
+
+\subsection*{4.2. Profile đường thẳng và đường cong}
+
+Với chuyển động tiến/lùi, quãng đường tương đối từ pose đầu được tính theo:
+
+\begin{equation}
+  d = \sqrt{(x-x_0)^2 + (y-y_0)^2}.
+\end{equation}
+
+Profile giảm tốc khi phần đường còn lại nhỏ và dừng khi sai số không vượt quá
+\texttt{distance\_tolerance}=0,008~m. Một hiệu chỉnh heading giới hạn trong
+$[-0,20;0,20]$~rad/s giúp hướng gần với yaw ban đầu. Tốc độ lùi được giới hạn
+riêng ở 0,08~m/s.
+
+Với cung tròn, vận tốc tuân theo $v=R\omega$, trong đó $R=0,40$~m. Tốc độ góc
+còn bị giới hạn bởi cả \texttt{angular\_speed}=0,40~rad/s và
+$\texttt{linear\_speed}/R$, nên vận tốc thẳng không vượt 0,10~m/s. Cung trái
+tích lũy yaw dương, cung phải tích lũy yaw âm; mục tiêu là
+$\pi/3$~rad.
+
+\reportfigure{06_happy_cong_trai.png}{Happy kích hoạt cung trái và profile hoàn thành một lần.}
+\reportfigure{07_sad_cong_phai.png}{Sad kích hoạt cung phải và profile hoàn thành một lần.}
+\reportfigure{08_angry_lui.png}{Angry kích hoạt profile lùi 0,20 m với vận tốc giới hạn.}
+
+\subsection*{4.3. Tích lũy góc qua điểm wrap}
+
+Yaw odometry thường nằm trong $[-\pi,\pi]$. Nếu lấy hiệu trực tiếp, khi robot
+đi qua biên từ $+\pi$ sang $-\pi$ sẽ xuất hiện bước nhảy gần $-2\pi$. Hàm
+\texttt{wrap} dùng:
+
+\begin{equation}
+  \Delta\psi = \operatorname{atan2}
+  \left(\sin(\psi_k-\psi_{k-1}),\cos(\psi_k-\psi_{k-1})\right),
+\end{equation}
+
+sau đó cộng từng $\Delta\psi$ vào \texttt{turn\_progress}. Vì vậy profile
+\texttt{rotate\_full} đo được đủ $2\pi$ dù yaw đã wrap nhiều lần. Dung sai góc
+là 0,025~rad; sau khi đạt mục tiêu, profile phát zero trong 0,30~s trước khi
+báo hoàn tất.
+
+\reportfigure{09_surprise_xoay_360.png}{Surprise kích hoạt xoay đủ một vòng; status thể hiện tiến độ và completed.}
+\reportfigure{10_fear_tien.png}{Fear kích hoạt profile tiến 0,20 m và dừng tại mục tiêu.}
+
+\subsection*{4.4. Giám sát odometry và timeout}
+
+\texttt{OdometryGuard} chỉ làm mới freshness khi timestamp odometry thay đổi.
+Một sample lặp timestamp không thể giữ robot chạy. Timestamp lùi trả reason
+\texttt{odom\_reset}; pose nhảy quá 0,5~m hoặc yaw nhảy quá 1,0~rad giữa hai
+sample trả \texttt{odom\_jump}. Pose, timestamp hoặc quaternion không hữu hạn
+đều bị từ chối ở biên ROS adapter.
+
+Trong khi thực thi, nếu odometry cũ quá 0,5~s, controller hủy profile với
+\texttt{odometry\_unavailable}. Mỗi segment có timeout 30~s để xử lý trường hợp
+robot kẹt hoặc odometry không phản ánh tiến triển. Sau lỗi, complete, shutdown
+hoặc exception, controller xóa \texttt{MotionExecutor} và publish zero Twist.
+
+\begin{center}
+\begin{tabular}{@{}p{0.35\textwidth}p{0.57\textwidth}@{}}
+\toprule \textbf{Điều kiện} & \textbf{Phản ứng} \\ \midrule
+Neutral/unknown ổn định & Hủy motion, zero Twist và arm lại. \\
+No face/multiple faces/low confidence & Dừng tức thời, chờ unknown ổn định. \\
+Observation quá 0,75~s & \texttt{observation\_timeout}, zero Twist. \\
+Odometry quá 0,50~s & \texttt{odometry\_unavailable}, zero Twist. \\
+Timestamp lùi hoặc pose nhảy & \texttt{odom\_reset}/\texttt{odom\_jump}. \\
+Profile quá 30~s & \texttt{motion\_timeout}, zero Twist. \\
+Ctrl+C/shutdown & Publish zero cuối cùng trước khi destroy node. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\reportfigure{11_neutral_no_face_stop.png}{Neutral hoặc mất khuôn mặt làm status chuyển sang dừng và /cmd\_vel về zero.}
+\reportfigure{12_odom_watchdog.png}{Odometry mất freshness làm controller hủy profile đang chạy.}
+
+\subsection*{4.5. Giới hạn an toàn của phạm vi bài}
+
+Hệ thống không khởi chạy Nav2, SLAM, localization hoặc teleop cùng interaction
+controller và không có module tránh vật cản riêng. Vì vậy việc thử chuyển động
+phải diễn ra trong vùng trống, với một publisher \path{/cmd_vel} duy nhất.
+Các profile chậm và ngắn giúp giảm rủi ro nhưng không thay thế cơ chế tránh va
+chạm hoặc nút dừng vật lý trên robot thật.
