@@ -8,4 +8,3 @@ cd "$PROJECT_DIR"
   --base-paths . \
   --packages-select tbe4_face_recognition \
   --symlink-install
-

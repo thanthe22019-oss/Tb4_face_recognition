@@ -75,6 +75,15 @@ class InferenceScheduler:
         self.next_due = float(now) + self.inference_period
         return observation
 
+    def fail(self, now: float) -> Observation:
+        """Create one fresh unknown observation before recognition exits."""
+        self._validate_time(now)
+        observation = make_observation([], self.session_id, self.sequence)
+        self.sequence += 1
+        self.pending = False
+        self.next_due = float(now) + self.inference_period
+        return observation
+
 
 def try_decode_status(payload: str):
     """Return validated controller status or None for a malformed update."""
@@ -131,8 +140,10 @@ def draw_overlay(
         state_text = 'Robot: waiting for status'
     else:
         action = status.active_action or '-'
+        stable = status.stable_emotion or '-'
         state_text = (
-            f'Robot: {status.state} action={action} reason={status.reason} '
+            f'Robot: {status.state} stable={stable} action={action} '
+            f'reason={status.reason} '
             f'{status.motion_progress:.0%}'
         )
     cv2.putText(
@@ -231,6 +242,10 @@ class EmotionRecognitionNode(Node):
     def _on_frame(self):
         ok, frame = self.camera.read()
         if not ok or frame is None:
+            observation = self.scheduler.fail(time.monotonic())
+            self.observation_publisher.publish(
+                String(data=encode_observation(observation))
+            )
             raise RuntimeError('Camera frame lost')
         if self.mirror:
             frame = cv2.flip(frame, 1)

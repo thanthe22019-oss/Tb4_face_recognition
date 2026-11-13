@@ -14,4 +14,3 @@ Các mục dưới đây chưa được chạy trong phiên phát triển tự �
 | Mất khuôn mặt làm robot dừng | NOT RUN | Cần webcam + simulator |
 | Đóng camera/Q làm robot dừng theo watchdog | NOT RUN | Cần webcam + simulator |
 | Mất hoặc pause odometry làm robot dừng | NOT RUN | Cần simulator |
-

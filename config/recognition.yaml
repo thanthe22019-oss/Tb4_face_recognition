@@ -7,4 +7,3 @@ emotion_recognition_node:
     inference_rate_hz: 5.0
     show_window: true
     mirror: true
-

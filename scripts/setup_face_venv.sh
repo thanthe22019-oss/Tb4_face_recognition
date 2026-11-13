@@ -35,4 +35,3 @@ print('TensorFlow:', tf.__version__)
 print('FER detector:', type(detector).__name__)
 print('rclpy:', rclpy.__file__)
 PY
-

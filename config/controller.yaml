@@ -18,4 +18,3 @@ emotion_controller_node:
     angle_tolerance: 0.025
     settle_seconds: 0.30
     segment_timeout: 30.0
-

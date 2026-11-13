@@ -117,4 +117,3 @@ Kiểm thử webcam và simulator được ghi riêng trong `docs/acceptance.md`
 - Nhận diện dao động: giữ một khuôn mặt đủ sáng, nhìn thẳng webcam và chờ qua ngưỡng ổn định.
 
 Thiết kế và implementation plan nằm trong `docs/superpowers/`.
-

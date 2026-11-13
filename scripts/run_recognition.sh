@@ -17,4 +17,3 @@ source /opt/ros/humble/setup.bash
 source "$PROJECT_DIR/install/setup.bash"
 exec ros2 launch tbe4_face_recognition recognition.launch.py \
   python_executable:="$VENV_PYTHON" "$@"
-
