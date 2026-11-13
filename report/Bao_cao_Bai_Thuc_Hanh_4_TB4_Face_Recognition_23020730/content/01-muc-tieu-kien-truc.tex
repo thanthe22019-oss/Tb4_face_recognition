@@ -60,36 +60,36 @@ Gazebo.
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
-  node distance=1.2cm and 1.45cm,
-  box/.style={draw,rounded corners,align=center,minimum height=1.05cm,
-              text width=3.25cm,fill=blue!5},
-  topic/.style={draw,align=center,minimum height=0.85cm,
-                text width=2.6cm,fill=orange!10},
+  box/.style={draw,rounded corners,align=center,minimum height=1.15cm,
+              text width=2.8cm,fill=blue!5,font=\scriptsize},
+  topic/.style={draw,align=center,minimum height=1.0cm,
+                text width=2.55cm,fill=orange!10,font=\scriptsize},
   arrow/.style={-{Latex[length=2.5mm]},thick}
 ]
-  \node[box] (camera) {Webcam laptop\\OpenCV VideoCapture};
-  \node[box,right=of camera] (recognition)
-    {emotion\_recognition\_node\\FER/TFLite, overlay};
-  \node[topic,right=of recognition] (observation)
-    {/emotion\_observation\\std\_msgs/String JSON};
-  \node[box,right=of observation] (controller)
-    {emotion\_controller\_node\\filter, state machine};
-  \node[box,below=of controller] (robot)
-    {TurtleBot 4\\motion control};
-  \node[topic,left=of robot] (cmd) {/cmd\_vel\\geometry\_msgs/Twist};
-  \node[topic,below=of observation] (status)
-    {/emotion\_behavior\_status\\std\_msgs/String JSON};
-  \node[topic,below=of recognition] (odom) {/odom\\nav\_msgs/Odometry};
+  \node[box] (camera) at (0,0) {Webcam laptop\\OpenCV VideoCapture};
+  \node[box] (recognition) at (3.9,0)
+    {emotion\_recognition\_\\node\\FER/TFLite, overlay};
+  \node[topic] (observation) at (7.8,0)
+    {/emotion\_\\observation\\std\_msgs/String JSON};
+  \node[box] (controller) at (11.7,0)
+    {emotion\_controller\_\\node\\filter, state machine};
+  \node[topic] (cmd) at (15.6,0)
+    {/cmd\_vel\\geometry\_msgs/\\Twist};
+  \node[box] (robot) at (19.5,0) {TurtleBot 4\\motion control};
+  \node[topic] (status) at (7.8,-2.5)
+    {/emotion\_behavior\_\\status\\std\_msgs/String JSON};
+  \node[topic] (odom) at (15.6,-2.5)
+    {/odom\\nav\_msgs/\\Odometry};
 
   \draw[arrow] (camera) -- (recognition);
   \draw[arrow] (recognition) -- (observation);
   \draw[arrow] (observation) -- (controller);
   \draw[arrow] (controller) -- (cmd);
   \draw[arrow] (cmd) -- (robot);
-  \draw[arrow] (robot) -- (odom);
-  \draw[arrow] (odom.east) -| (controller.south);
-  \draw[arrow] (controller.south west) -- (status.east);
-  \draw[arrow] (status.west) -- (recognition.south);
+  \draw[arrow] (robot.south) |- (odom.east);
+  \draw[arrow] (odom.west) -| (controller.south);
+  \draw[arrow] (controller.south west) |- (status.east);
+  \draw[arrow] (status.west) -| (recognition.south);
 \end{tikzpicture}
 }
 \caption{Kiến trúc dữ liệu của hệ thống nhận diện biểu cảm và điều khiển robot.}
@@ -133,5 +133,3 @@ Một observation hợp lệ có dạng:
 sau mỗi inference hoàn thành. Controller chỉ coi một sequence mới trong cùng
 session là heartbeat hợp lệ. Protocol kiểm tra đúng tập khóa, kiểu dữ liệu,
 miền confidence và nhãn; payload sai không được truyền thẳng vào state machine.
-
-\reportfigure{01_kien_truc_he_thong.png}{Đồ thị node/topic thực tế hoặc sơ đồ kiến trúc của hệ thống khi chạy interaction.}

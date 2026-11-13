@@ -5,8 +5,8 @@
 Tạo một báo cáo LaTeX tiếng Việt theo mẫu UET/TurtleBot 4 đã dùng ở các bài
 trước, trình bày đầy đủ thiết kế, mã nguồn, quy trình chạy, kiểm thử và kết quả
 của package `tbe4_face_recognition`. Báo cáo phục vụ giảng viên và trợ giảng,
-đồng thời phải có thể cập nhật tự động khi người dùng bổ sung ảnh nghiệm thu
-webcam và simulator.
+đồng thời phải có thể cập nhật bằng một URL khi người dùng cung cấp bộ ảnh
+nghiệm thu webcam và simulator.
 
 ## Đầu ra và người đọc
 
@@ -14,13 +14,12 @@ webcam và simulator.
 - Tác giả: Thân Thế Trí Dũng, MSSV 23020730, lớp QH-2023-I/CQ-E-RE.
 - Thư mục đầu ra:
   `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/`.
-- Sản phẩm: source LaTeX nhiều file, tài liệu hướng dẫn, danh sách ảnh cần chụp,
-  tài liệu tham khảo và PDF được biên dịch khi máy có đủ TeX Live.
+- Sản phẩm: source LaTeX nhiều file, tài liệu hướng dẫn liên kết minh chứng,
+  tài liệu tham khảo và PDF đã biên dịch.
 
 ## Mẫu tham khảo
 
-Giữ bố cục, trang bìa, font tiếng Việt, bảng, code block, màu sắc, logo và cơ
-chế placeholder ảnh từ:
+Giữ bố cục, trang bìa, font tiếng Việt, bảng, code block, màu sắc và logo từ:
 
 `/home/alex/Interaction/tb4_nav2/report/Bao_cao_TurtleBot4_SLAM_Nav2_23020730/`
 
@@ -50,23 +49,21 @@ dung kỹ thuật phải được viết lại cho bài nhận diện biểu c�
   khi chưa có ảnh/video/log thật.
 - Mọi kết quả chưa chạy dùng macro `\pending` và nêu đúng thao tác cần thực hiện.
 - Không đưa frame webcam, crop khuôn mặt, video, dữ liệu sinh trắc hoặc file môi
-  trường ảo vào repository nếu người dùng chưa chủ động chọn ảnh minh chứng.
+  trường ảo vào repository; chỉ dẫn tới bộ ảnh do người dùng cung cấp.
 
 ## Hình minh họa
 
 - Dùng TikZ hoặc Mermaid chuyển thành hình cho sơ đồ kiến trúc và state machine.
-- Tạo placeholder có tên cụ thể cho overlay webcam, topic observation/status,
-  preview zero velocity, năm chuyển động non-neutral, neutral/no-face stop,
-  odometry timeout và kết quả test.
-- `HUONG_DAN_CHUP_ANH.md` phải mô tả nội dung bắt buộc của từng ảnh và tránh lộ
-  khuôn mặt ngoài người thực hiện.
+- Không tạo placeholder ảnh hoặc yêu cầu tên file ảnh cố định.
+- Khai báo một liên kết trong `evidence-link.tex`; Chương 6 nêu tiêu chí cần
+  đối chiếu tại liên kết trước khi chuyển từng hàng từ PENDING sang PASS.
 
 ## Các phương án
 
 ### LaTeX nhiều file theo mẫu UET — chọn
 
-Phù hợp với các báo cáo trước, dễ biên dịch PDF, tái sử dụng macro placeholder
-và cho phép cập nhật từng chương hoặc từng ảnh độc lập.
+Phù hợp với các báo cáo trước, dễ biên dịch PDF và cho phép cập nhật liên kết
+minh chứng mà không đưa ảnh khuôn mặt vào repository.
 
 ### Báo cáo Markdown rồi chuyển PDF
 
@@ -84,5 +81,5 @@ xạ hành động và bằng chứng nghiệm thu.
   toolchain sẵn sàng.
 - Nội dung kỹ thuật khớp source, YAML, README và test của commit được ghi nhận.
 - Kết quả tự động và kết quả thủ công được phân biệt rõ.
-- Ảnh chưa có vẫn tạo placeholder biên dịch được và có hướng dẫn thay thế.
+- PDF không phụ thuộc file ảnh nghiệm thu; URL minh chứng có thể bổ sung sau.
 - Không sửa mã ROS 2, cấu hình vận hành hoặc test của ứng dụng khi viết báo cáo.

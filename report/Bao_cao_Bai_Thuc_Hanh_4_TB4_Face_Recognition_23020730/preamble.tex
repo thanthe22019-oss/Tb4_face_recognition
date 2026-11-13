@@ -30,7 +30,6 @@
 \usepackage{xcolor}
 \usepackage{fvextra}
 \usepackage{graphicx}
-\graphicspath{{images/}}
 \usepackage{float}
 \usepackage{caption}
 \usepackage{array,booktabs,multirow,longtable}
@@ -54,24 +53,6 @@
   frame=single,
   rulecolor=\color{black!20},
   xleftmargin=1em
-}
-
-% Nếu ảnh chưa tồn tại, báo cáo vẫn biên dịch và hiển thị tên file cần bổ sung.
-\newcommand{\reportfigure}[2]{%
-\begin{figure}[H]
-\centering
-\IfFileExists{images/#1}{%
-  \includegraphics[width=0.92\textwidth,height=0.52\textheight,keepaspectratio]{#1}%
-}{%
-  \fbox{\begin{minipage}[c][5.2cm][c]{0.86\textwidth}
-    \centering
-    {\Large\bfseries ẢNH MINH CHỨNG CHƯA BỔ SUNG}\par\vspace{0.4cm}
-    Lưu ảnh đúng tên:\par
-    \nolinkurl{images/#1}
-  \end{minipage}}%
-}
-\caption{#2}
-\end{figure}
 }
 
 \newcommand{\pending}[1]{%

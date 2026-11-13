@@ -1,4 +1,3 @@
-\clearpage
 \section*{6. Kiểm thử và kết quả}
 \addcontentsline{toc}{section}{6. Kiểm thử và kết quả}
 
@@ -49,15 +48,13 @@ Pytest logic/package & PASS & 102 passed, 0 failed. \\
 Build package & PASS & Colcon build tạo install prefix hợp lệ. \\
 Colcon package tests & PASS & 102 tests, 0 errors, 0 failures, 0 skipped. \\
 FER với webcam thật, headless & PASS & Chạy 12~giây, không exception, thoát sạch. \\
-Overlay GUI thời gian thực & PENDING & Cần ảnh cửa sổ sau thay đổi confidence. \\
-Sáu nhãn biểu cảm & PENDING & Chưa có bộ ảnh/video đối chiếu từng nhãn. \\
-Năm profile chuyển động & PENDING & Chưa có video/log simulator cho từng profile. \\
-Neutral/no-face/odom stop & PENDING & Cần thử khi robot đang chuyển động. \\
+Overlay GUI thời gian thực & PENDING & Đối chiếu qua URL minh chứng khi được cung cấp. \\
+Sáu nhãn biểu cảm & PENDING & Chưa có bộ minh chứng đối chiếu từng nhãn. \\
+Năm profile chuyển động & PENDING & Chưa có minh chứng simulator cho từng profile. \\
+Neutral/no-face/odom stop & PENDING & Cần kết quả thử khi robot đang chuyển động. \\
 Robot TurtleBot 4 thật & PENDING & Chưa nghiệm thu phần cứng. \\
 \bottomrule
 \end{longtable}
-
-\reportfigure{13_kiem_thu_tu_dong.png}{Terminal hiển thị kết quả pytest và colcon test cuối cùng.}
 
 \subsection*{6.3. Các lỗi đã gặp và cách xử lý}
 
@@ -83,25 +80,40 @@ NumPy nhỏ hơn 1.25 trong khi virtualenv dùng NumPy~1.26.4. Cảnh báo khôn
 FER/TFLite dừng trong smoke test; báo cáo không coi đây là bằng chứng tương
 thích cho mọi chức năng SciPy ngoài đường inference đã chạy.
 
-\subsection*{6.4. Ma trận nghiệm thu thủ công}
+\subsection*{6.4. Liên kết minh chứng và ma trận nghiệm thu}
+
+Báo cáo không yêu cầu chụp hoặc nhúng một danh sách ảnh cố định. Toàn bộ ảnh
+minh chứng có thể được tổ chức trong một thư mục hoặc album trực tuyến; URL
+được khai báo một lần trong file \path{evidence-link.tex} và dùng làm nguồn
+đối chiếu cho các ca thủ công dưới đây.
+
+\begin{center}
+\fbox{\begin{minipage}{0.86\textwidth}
+\centering
+\textbf{Bộ ảnh minh chứng trực tuyến}\par\vspace{0.3cm}
+\evidenceLink
+\end{minipage}}
+\end{center}
 
 \begin{longtable}{@{}p{0.46\textwidth}p{0.18\textwidth}p{0.28\textwidth}@{}}
-\toprule \textbf{Ca kiểm thử} & \textbf{Trạng thái} & \textbf{Minh chứng cần có} \\ \midrule
+\toprule \textbf{Ca kiểm thử} & \textbf{Trạng thái} & \textbf{Cách đối chiếu} \\ \midrule
 \endfirsthead
-\toprule \textbf{Ca kiểm thử} & \textbf{Trạng thái} & \textbf{Minh chứng cần có} \\ \midrule
+\toprule \textbf{Ca kiểm thử} & \textbf{Trạng thái} & \textbf{Cách đối chiếu} \\ \midrule
 \endhead
-Overlay hiển thị box/nhãn/confidence/status & PENDING & Ảnh 02. \\
-Nhận đủ happy, sad, neutral, angry, surprise, fear & PENDING & Ảnh 03 hoặc video. \\
-Preview luôn zero Twist & PENDING & Ảnh 05. \\
-Happy cong trái và Sad cong phải & PENDING & Ảnh 06--07. \\
-Angry lùi, Surprise xoay, Fear tiến & PENDING & Ảnh 08--10. \\
-Neutral/no-face dừng robot & PENDING & Ảnh 11. \\
-Mất odometry dừng robot & PENDING & Ảnh 12. \\
-Chỉ một publisher \path{/cmd_vel} & PENDING & Topic info trong video/ảnh. \\
+Overlay hiển thị box/nhãn/confidence/status & PENDING & Mục tương ứng trong URL minh chứng. \\
+Nhận đủ happy, sad, neutral, angry, surprise, fear & PENDING & Sáu kết quả có nhãn và confidence. \\
+Preview luôn zero Twist & PENDING & Status và output \path{/cmd_vel}. \\
+Happy cong trái và Sad cong phải & PENDING & Quỹ đạo và behavior status. \\
+Angry lùi, Surprise xoay, Fear tiến & PENDING & Quỹ đạo và behavior status. \\
+Neutral/no-face dừng robot & PENDING & Status dừng và zero Twist. \\
+Mất odometry dừng robot & PENDING & Reason watchdog và zero Twist. \\
+Chỉ một publisher \path{/cmd_vel} & PENDING & Kết quả \texttt{ros2 topic info -v}. \\
 Repository public & PASS & \url{https://github.com/thanthe22019-oss/Tb4_face_recognition}. \\
 Video demo & PENDING & Chưa có URL video. \\
 \bottomrule
 \end{longtable}
 
 Các trạng thái PENDING không được diễn giải thành thất bại của thuật toán, nhưng
-cũng không được dùng để tuyên bố hệ thống đã nghiệm thu end-to-end.
+cũng không được dùng để tuyên bố hệ thống đã nghiệm thu end-to-end. Khi URL
+được cung cấp, từng trạng thái chỉ chuyển sang PASS sau khi nội dung liên kết
+thể hiện đủ điều kiện của hàng tương ứng.

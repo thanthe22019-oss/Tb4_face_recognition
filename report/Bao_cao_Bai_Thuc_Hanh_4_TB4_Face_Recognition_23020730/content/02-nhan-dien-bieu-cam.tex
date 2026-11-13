@@ -58,10 +58,6 @@ confidence, số khuôn mặt và observation mới nhất. Dòng trạng thái 
 reason và phần trăm tiến độ. Frame đầu vào không bị sửa và không có code path
 ghi ảnh hoặc video xuống đĩa.
 
-\reportfigure{02_overlay_nhan_dien.png}{Cửa sổ OpenCV hiển thị một khuôn mặt, nhãn FER, confidence, stable emotion và trạng thái robot.}
-\reportfigure{03_sau_bieu_cam.png}{Bộ minh chứng sáu biểu cảm happy, sad, neutral, angry, surprise và fear trong điều kiện ánh sáng thử nghiệm.}
-\reportfigure{04_topics_observation_status.png}{Hai topic JSON /emotion\_observation và /emotion\_behavior\_status trong một phiên chạy.}
-
 \subsection*{2.4. Môi trường AI độc lập}
 
 TensorFlow, FER và OpenCV pip không được cài vào Python hệ thống của ROS.
@@ -87,6 +83,6 @@ node mở webcam thành công. Một smoke test headless 12~giây đã xác nh�
 lý frame thật mà không còn crash do kiểu bounding box.
 
 Bài thực hành chỉ suy luận biểu cảm; không nhận diện danh tính, tuổi, giới tính
-hoặc chủng tộc. Hệ thống không tự lưu frame, crop mặt hay video. Ảnh minh chứng
-có khuôn mặt chỉ được thêm khi người thực hiện chủ động chọn và kiểm tra nội
-dung.
+hoặc chủng tộc. Hệ thống không tự lưu frame, crop mặt hay video. Báo cáo không
+nhúng ảnh khuôn mặt vào repository; bộ ảnh minh chứng do người thực hiện chọn
+được dẫn bằng một URL riêng trong Chương~6.

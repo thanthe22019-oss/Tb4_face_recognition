@@ -1,1 +1,65 @@
-% Nội dung được bổ sung ở Task 5.
+\clearpage
+\section*{7. Kết luận và hướng phát triển}
+\addcontentsline{toc}{section}{7. Kết luận và hướng phát triển}
+
+\subsection*{7.1. Kết luận}
+
+Bài thực hành đã xây dựng package ROS~2 độc lập
+\texttt{tbe4\_face\_recognition}, kết hợp webcam, FER/TensorFlow Lite và
+TurtleBot~4 qua giao diện topic chuẩn. Kiến trúc hai node giữ phần AI ở
+virtualenv riêng và giữ vòng điều khiển 20~Hz không phụ thuộc thời gian
+inference. Protocol JSON có session/sequence, filter kiểm tra đúng một khuôn
+mặt và confidence lớn hơn 0,60, còn state machine one-shot ngăn hành động tự
+lặp.
+
+Năm profile chuyển động non-neutral dùng phản hồi odometry thay vì chỉ chạy
+theo thời gian; neutral dừng robot. Watchdog observation/odometry, kiểm tra
+sequence/session, pose jump, timeout, preview mặc định và zero Twist khi
+cleanup tạo nhiều lớp dừng an toàn cho phạm vi bài thực hành.
+
+Bằng chứng tự động cuối cho commit ứng dụng \texttt{c35bdd5} là 102 pytest
+pass và 102 Colcon test với 0 lỗi, 0 thất bại, 0 bỏ qua. Webcam và FER/TFLite
+đã chạy headless 12~giây trên frame thật mà không exception. Các kết quả này
+chứng minh contract, thuật toán lọc, state machine, profile số và adapter hoạt
+động theo test; chúng không thay thế nghiệm thu trực quan sáu biểu cảm và năm
+quỹ đạo trên simulator.
+
+\subsection*{7.2. Giới hạn}
+
+\begin{itemize}[leftmargin=1cm,itemsep=0.2em]
+  \item Phản ứng tức thời ở confidence lớn hơn 0,60 giảm độ trễ nhưng nhạy hơn
+        với một lần phân loại sai so với thiết kế ổn định nhiều frame.
+  \item FER2013 chỉ cung cấp nhóm nhãn biểu cảm tổng quát; độ chính xác phụ
+        thuộc ánh sáng, góc mặt, che khuất và khác biệt giữa người dùng.
+  \item Bài chỉ hỗ trợ một khuôn mặt. Nhiều mặt luôn dừng thay vì chọn một
+        người điều khiển.
+  \item Không có obstacle avoidance riêng và không chạy Nav2; mọi thử nghiệm
+        motion cần vùng trống và giám sát trực tiếp.
+  \item Chưa có đo lường thực nghiệm về accuracy, confusion matrix, latency
+        dài hạn, sai số quãng đường/góc hoặc độ lặp lại trên robot thật.
+  \item Cảnh báo phiên bản SciPy hệ thống/NumPy vẫn xuất hiện nhưng chưa làm
+        hỏng đường inference đã thử.
+\end{itemize}
+
+\subsection*{7.3. Hướng phát triển}
+
+Các bước tiếp theo phù hợp là thu một tập kiểm thử có sự đồng ý của người thực
+hiện để đo confusion matrix; bổ sung hysteresis hoặc voting tùy chọn khi cần
+giảm false trigger; đo latency camera--inference--Twist; đối chiếu odometry với
+ground truth; và tích hợp safety layer/obstacle detection trước khi dùng trong
+không gian có người. Với robot thật, cần thử giới hạn tốc độ thấp hơn, nút dừng
+khẩn cấp và cơ chế arbitration cho \path{/cmd_vel}.
+
+\subsection*{7.4. Liên kết}
+
+\begin{itemize}[leftmargin=1cm]
+  \item \textbf{Repository public:}
+        \url{https://github.com/thanthe22019-oss/Tb4_face_recognition}
+  \item \textbf{Bộ ảnh minh chứng:} \evidenceLink
+  \item \textbf{Video demo:} \pending{bổ sung URL sau khi quay đủ sáu biểu cảm,
+        năm profile và các tình huống dừng.}
+\end{itemize}
+
+\addcontentsline{toc}{section}{Tài liệu tham khảo}
+\bibliographystyle{plain}
+\bibliography{references}

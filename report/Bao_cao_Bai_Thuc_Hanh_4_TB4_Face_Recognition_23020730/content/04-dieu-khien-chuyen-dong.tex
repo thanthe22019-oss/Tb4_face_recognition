@@ -42,10 +42,6 @@ $\texttt{linear\_speed}/R$, nên vận tốc thẳng không vượt 0,10~m/s. Cu
 tích lũy yaw dương, cung phải tích lũy yaw âm; mục tiêu là
 $\pi/3$~rad.
 
-\reportfigure{06_happy_cong_trai.png}{Happy kích hoạt cung trái và profile hoàn thành một lần.}
-\reportfigure{07_sad_cong_phai.png}{Sad kích hoạt cung phải và profile hoàn thành một lần.}
-\reportfigure{08_angry_lui.png}{Angry kích hoạt profile lùi 0,20 m với vận tốc giới hạn.}
-
 \subsection*{4.3. Tích lũy góc qua điểm wrap}
 
 Yaw odometry thường nằm trong $[-\pi,\pi]$. Nếu lấy hiệu trực tiếp, khi robot
@@ -61,9 +57,6 @@ sau đó cộng từng $\Delta\psi$ vào \texttt{turn\_progress}. Vì vậy prof
 \texttt{rotate\_full} đo được đủ $2\pi$ dù yaw đã wrap nhiều lần. Dung sai góc
 là 0,025~rad; sau khi đạt mục tiêu, profile phát zero trong 0,30~s trước khi
 báo hoàn tất.
-
-\reportfigure{09_surprise_xoay_360.png}{Surprise kích hoạt xoay đủ một vòng; status thể hiện tiến độ và completed.}
-\reportfigure{10_fear_tien.png}{Fear kích hoạt profile tiến 0,20 m và dừng tại mục tiêu.}
 
 \subsection*{4.4. Giám sát odometry và timeout}
 
@@ -91,9 +84,6 @@ Ctrl+C/shutdown & Publish zero cuối cùng trước khi destroy node. \\
 \bottomrule
 \end{tabular}
 \end{center}
-
-\reportfigure{11_neutral_no_face_stop.png}{Neutral hoặc mất khuôn mặt làm status chuyển sang dừng và /cmd\_vel về zero.}
-\reportfigure{12_odom_watchdog.png}{Odometry mất freshness làm controller hủy profile đang chạy.}
 
 \subsection*{4.5. Giới hạn an toàn của phạm vi bài}
 

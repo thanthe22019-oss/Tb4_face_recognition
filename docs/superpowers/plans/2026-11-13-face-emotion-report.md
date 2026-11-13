@@ -4,7 +4,7 @@
 
 **Goal:** Produce a detailed Vietnamese LaTeX report for the completed `tbe4_face_recognition` package while keeping every unverified webcam and TurtleBot result explicitly pending.
 
-**Architecture:** Reuse the read-only UET/TurtleBot 4 LaTeX template as a visual scaffold and split the report into focused chapters for recognition, filtering, behavior, odometry motion, ROS integration, operation, and evidence. Repository source and automated tests provide verified facts; manual webcam/simulator results use named placeholders until real evidence is supplied.
+**Architecture:** Reuse the read-only UET/TurtleBot 4 LaTeX template as a visual scaffold and split the report into focused chapters for recognition, filtering, behavior, odometry motion, ROS integration, operation, and evidence. Repository source and automated tests provide verified facts; manual webcam/simulator results remain pending and reference one external evidence URL when supplied.
 
 **Tech Stack:** LaTeX/pdfLaTeX, Vietnamese T5 fonts, TikZ, longtable, BibTeX, ROS 2 Humble source/config/test evidence
 
@@ -27,7 +27,7 @@
 - AI acceptance: passing fake-detector tests does not prove the installed FER model recognizes six live expressions.
 - Motion acceptance: numerical profile tests do not prove the simulator or physical TurtleBot completed the trajectories.
 - Safety claims: distinguish tested pure/controller behavior from pending live camera-close, no-face, neutral, and odometry-loss trials.
-- Evidence integrity: every missing screenshot must remain a named placeholder and never render as an apparent PASS.
+- Evidence integrity: the PDF must not require screenshots; a supplied evidence URL never turns a manual row into PASS without content review.
 
 ---
 
@@ -38,7 +38,7 @@
 - Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/preamble.tex`
 - Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/references.bib`
 - Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/Logo_UET.png`
-- Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/images/README.md`
+- Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/evidence-link.tex`
 - Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/content/00-frontmatter.tex`
 - Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/content/01-muc-tieu-kien-truc.tex`
 - Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/content/02-nhan-dien-bieu-cam.tex`
@@ -50,11 +50,11 @@
 
 **Interfaces:**
 - Consumes: the read-only UET/TurtleBot 4 report template named in the spec.
-- Produces: a compilable multi-file report skeleton with `\reportfigure`, `\pending`, code-block, table, and TikZ support.
+- Produces: a compilable multi-file report skeleton with `\pending`, an external evidence link, code-block, table, and TikZ support.
 
 - [ ] **Step 1: Copy only reusable visual assets**
 
-Copy the logo and adapt `preamble.tex`, title-page layout, typography, colors, code blocks, tables, `\reportfigure`, and Vietnamese metadata. Do not copy technical text from the SLAM/Nav2 report.
+Copy the logo and adapt `preamble.tex`, title-page layout, typography, colors, code blocks, tables, and Vietnamese metadata. Do not copy technical text from the SLAM/Nav2 report.
 
 - [ ] **Step 2: Define report metadata and chapter order**
 
@@ -62,7 +62,7 @@ Set the author to Thân Thế Trí Dũng, MSSV 23020730, class QH-2023-I/CQ-E-RE
 
 - [ ] **Step 3: Add safe evidence macros**
 
-Define `\pending{...}` with a visible pending style and preserve the figure macro that renders a named placeholder when an image is missing.
+Define `\pending{...}` with a visible pending style and keep the external evidence URL in one small file that can be updated later.
 
 - [ ] **Step 4: Compile the empty structure**
 
@@ -73,7 +73,7 @@ cd report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730
 pdflatex -interaction=nonstopmode -halt-on-error main.tex
 ```
 
-Expected: PDF generation succeeds with intentional image placeholders and no undefined content files.
+Expected: PDF generation succeeds without requiring any manual-evidence image file.
 
 - [ ] **Step 5: Commit**
 
@@ -170,11 +170,11 @@ git commit -m "docs: describe emotion behavior and safe motion"
 - Modify: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/content/05-cai-dat-van-hanh.tex`
 - Modify: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/content/06-kiem-thu-ket-qua.tex`
 - Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/HUONG_DAN.md`
-- Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/HUONG_DAN_CHUP_ANH.md`
+- Create: `report/Bao_cao_Bai_Thuc_Hanh_4_TB4_Face_Recognition_23020730/MINH_CHUNG.md`
 
 **Interfaces:**
 - Consumes: `README.md`, scripts, launch files, `docs/acceptance.md`, current Git state, fresh pytest/colcon output, and manual evidence supplied later.
-- Produces: reproducible operator steps, verified automated-results table, pending manual matrix, and an exact screenshot checklist.
+- Produces: reproducible operator steps, verified automated-results table, pending manual matrix, and one external evidence-link handoff.
 
 - [ ] **Step 1: Re-run and capture the evidence baseline**
 
@@ -202,25 +202,13 @@ Cover venv setup, build, recognition preview, simulator in a separate terminal, 
 
 Include overlay/webcam, six recognized expressions, five moving profiles, neutral stop, no-face/multiple-face stop, camera-close watchdog, odometry loss, single `/cmd_vel` publisher, public repository, and demo video. Initialize unsupported items as `PENDING`, not PASS.
 
-- [ ] **Step 4: Create the screenshot checklist**
+- [ ] **Step 4: Create the external evidence handoff**
 
-Use exact filenames and capture criteria:
-
-1. `01_kien_truc_he_thong.png` — architecture diagram or node/topic graph.
-2. `02_overlay_nhan_dien.png` — one face, FER label, confidence and stable status.
-3. `03_sau_bieu_cam.png` — evidence covering all six required expressions.
-4. `04_topics_observation_status.png` — valid JSON observation and behavior status.
-5. `05_preview_zero_cmd_vel.png` — preview trigger with zero Twist.
-6. `06_happy_cong_trai.png` — left-arc execution and completion.
-7. `07_sad_cong_phai.png` — right-arc execution and completion.
-8. `08_angry_lui.png` — reverse profile evidence.
-9. `09_surprise_xoay_360.png` — full-turn progress/completion.
-10. `10_fear_tien.png` — forward profile evidence.
-11. `11_neutral_no_face_stop.png` — neutral or face-loss stop.
-12. `12_odom_watchdog.png` — stale/lost odometry stop.
-13. `13_kiem_thu_tu_dong.png` — final pytest/colcon summary.
-
-State that images containing a face must be selected by the user and should not expose bystanders.
+Keep the report independent of local screenshots. Add `evidence-link.tex` as the
+single update point for the user's album/folder URL and document the criteria
+for overlay, six expressions, preview, five motions, stop paths and publisher
+inspection. Keep each unsupported row PENDING until the linked content is
+reviewed.
 
 - [ ] **Step 5: Commit**
 
@@ -252,7 +240,7 @@ pdflatex -interaction=nonstopmode -halt-on-error main.tex
 pdflatex -interaction=nonstopmode -halt-on-error main.tex
 ```
 
-Expected: `main.pdf` exists, table of contents and references resolve, and missing live images render only as intentional placeholders. If TeX is unavailable, record the exact missing command/package instead of claiming success.
+Expected: `main.pdf` exists, table of contents and references resolve, and compilation does not depend on manual-evidence images. If TeX is unavailable, record the exact missing command/package instead of claiming success.
 
 - [ ] **Step 3: Audit formatting and unsupported claims**
 
@@ -268,11 +256,11 @@ Review every match and retain it only when backed by automated output or real ma
 
 - [ ] **Step 4: Audit privacy and generated files**
 
-Confirm the report directory contains no `.venv-face`, raw video, unselected face crops, credential-shaped values, or build cache. Verify every image has a documented source.
+Confirm the report directory contains no `.venv-face`, raw video, face crops, credential-shaped values, or build cache. The only local raster asset is the reusable UET logo.
 
 - [ ] **Step 5: Record final handoff**
 
-Report the PDF path and page count, list remaining placeholders, name the exact manual tests still required, and provide the next command for rebuilding after the user adds screenshots.
+Report the PDF path and page count, list remaining PENDING checks, and identify `evidence-link.tex` as the update point after the user sends the link.
 
 - [ ] **Step 6: Commit**
 
