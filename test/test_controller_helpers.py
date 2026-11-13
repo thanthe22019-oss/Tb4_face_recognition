@@ -38,12 +38,8 @@ def observation(sequence, emotion, confidence=0.9):
 
 
 def start_happy_motion(core):
-    core.update_odometry(Pose(0.0, 0.0, 0.0), stamp=1.0, now=0.0)
-    core.receive_observation(observation(0, 'neutral'), 0.0)
-    core.receive_observation(observation(1, 'neutral'), 0.75)
-    core.receive_observation(observation(2, 'happy'), 0.80)
     core.update_odometry(Pose(0.0, 0.0, 0.0), stamp=2.0, now=1.29)
-    core.receive_observation(observation(3, 'happy'), 1.30)
+    core.receive_observation(observation(0, 'happy', confidence=0.61), 1.30)
     assert core.behavior.state == 'EXECUTING'
 
 

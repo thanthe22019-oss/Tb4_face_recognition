@@ -1,4 +1,4 @@
-"""Temporal emotion stabilization independent of ROS and TensorFlow."""
+"""Immediate confidence filtering independent of ROS and TensorFlow."""
 
 from dataclasses import dataclass
 import math
@@ -23,20 +23,25 @@ class FilterResult:
 
 
 class EmotionFilter:
-    """Require stable fresh inference before exposing a control emotion."""
+    """Expose confident labels immediately while enforcing transport freshness."""
 
     def __init__(
         self,
-        confidence_threshold=0.55,
-        stable_seconds=0.5,
+        confidence_threshold=0.60,
+        stable_seconds=0.0,
         rearm_seconds=0.75,
         max_observation_gap=0.75,
     ):
-        values = [stable_seconds, rearm_seconds, max_observation_gap]
+        positive_values = [rearm_seconds, max_observation_gap]
         if (
             not math.isfinite(confidence_threshold)
             or not 0.0 < confidence_threshold <= 1.0
-            or any(not math.isfinite(value) or value <= 0.0 for value in values)
+            or not math.isfinite(stable_seconds)
+            or stable_seconds < 0.0
+            or any(
+                not math.isfinite(value) or value <= 0.0
+                for value in positive_values
+            )
         ):
             raise ValueError('filter thresholds must be finite and positive')
         self.confidence_threshold = float(confidence_threshold)
@@ -76,7 +81,7 @@ class EmotionFilter:
             return 'unknown', 'unsupported_emotion'
         if observation.emotion not in CONTROL_EMOTIONS:
             return 'unknown', 'unknown_emotion'
-        if observation.confidence < self.confidence_threshold:
+        if observation.confidence <= self.confidence_threshold:
             return 'unknown', 'low_confidence'
         return observation.emotion, None
 
@@ -114,9 +119,7 @@ class EmotionFilter:
             self.stable_emotion = None
 
         threshold = (
-            self.rearm_seconds
-            if normalized in {'neutral', 'unknown'}
-            else self.stable_seconds
+            self.rearm_seconds if normalized == 'unknown' else self.stable_seconds
         )
         changed = False
         if now - self.candidate_since >= threshold:

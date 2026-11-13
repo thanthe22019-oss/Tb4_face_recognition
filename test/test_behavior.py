@@ -21,6 +21,15 @@ def arm(controller, now=0.0):
     assert controller.state == 'ARMED'
 
 
+def test_controller_starts_armed_for_first_confident_expression():
+    controller = BehaviorController(preview_only=False)
+
+    decision = controller.receive(result('happy'), 0.0, odometry_ready=True)
+
+    assert decision.start_action == 'arc_left'
+    assert controller.state == 'EXECUTING'
+
+
 @pytest.mark.parametrize(
     ('emotion', 'action'),
     [

@@ -10,7 +10,7 @@ Xây dựng một ROS 2 package độc lập phục vụ bài thực hành: lấ
 
 - Nhận diện sáu biểu cảm `happy`, `sad`, `neutral`, `angry`, `surprise`, `fear` từ webcam.
 - Hiển thị video trực tiếp với khung khuôn mặt, nhãn, confidence, trạng thái ổn định và hành động robot.
-- Ánh xạ biểu cảm sang sáu hành động quy định và thực hiện mỗi hành động một lần sau khi biểu cảm ổn định.
+- Ánh xạ biểu cảm sang sáu hành động quy định và thực hiện mỗi hành động một lần ngay khi confidence lớn hơn `0.60`.
 - Tách inference khỏi điều khiển robot để TensorFlow/FER không chặn vòng điều khiển hoặc watchdog.
 - Dừng robot khi nhận `neutral`, mất khuôn mặt, mất heartbeat, mất odometry, camera lỗi hoặc node đóng.
 - Có chế độ preview mặc định để kiểm tra webcam và logic mà không làm robot chuyển động.
@@ -79,13 +79,13 @@ Topic `/emotion_behavior_status` cũng dùng JSON, gồm `state`, `stable_emotio
 
 - Dùng `FER(use_tflite=True, mtcnn=False)` từ module `fer.fer` để không nạp nhánh MTCNN/PyTorch và giữ inference CPU gọn.
 - Webcam mặc định `/dev/video0`, độ phân giải yêu cầu 640x480, mirror bật; index, width, height, mirror, cửa sổ và tần số inference là ROS parameters.
-- Chỉ kết quả có đúng một khuôn mặt và confidence tối thiểu `0.55` mới là ứng viên hợp lệ.
+- Chỉ kết quả có đúng một khuôn mặt và confidence lớn hơn `0.60` mới hợp lệ.
 - Chọn khuôn mặt duy nhất; không đoán người điều khiển khi có nhiều khuôn mặt.
-- Một biểu cảm điều khiển phải xuất hiện liên tục ít nhất `0.5 s` trong các lần inference hợp lệ trước khi trở thành stable.
-- `neutral` hợp lệ ra lệnh dừng ngay khi trở thành stable. Mất mặt, nhiều mặt, confidence thấp, `disgust`, payload sai hoặc heartbeat quá `0.75 s` đều dừng và hủy hành động.
+- Một biểu cảm hợp lệ trở thành stable ngay ở observation đầu tiên; không dùng cửa sổ ổn định theo thời gian.
+- `neutral` hợp lệ ra lệnh dừng và re-arm ngay. Mất mặt, nhiều mặt, confidence không lớn hơn `0.60`, `disgust`, payload sai hoặc heartbeat quá `0.75 s` đều dừng và hủy hành động.
 - Observation chỉ làm mới watchdog khi có sequence mới trong session hiện tại. Sequence trùng/lùi bị bỏ qua; session mới buộc dừng và re-arm trước khi có thể chạy.
-- Sau khi một hành động hoàn thành hoặc bị hủy, cùng biểu cảm không thể kích hoạt lại. Controller chỉ được arm lại sau khi `neutral` hoặc `unknown/no_face` ổn định `0.75 s`; sau đó một biểu cảm non-neutral mới có thể kích hoạt.
-- Biểu cảm non-neutral khác xuất hiện trong khi robot chạy không xếp hàng hành động mới. Khi nó trở thành stable, hành động hiện tại bị dừng và controller chờ arm lại.
+- Controller bắt đầu ở trạng thái armed để biểu cảm hợp lệ đầu tiên có thể chạy ngay. Sau khi một hành động hoàn thành hoặc bị hủy, cùng biểu cảm không thể kích hoạt lại. `neutral` hợp lệ re-arm ngay; `unknown/no_face` phải kéo dài `0.75 s`.
+- Biểu cảm non-neutral khác xuất hiện trong khi robot chạy không xếp hàng hành động mới. Khi confidence của nó vượt `0.60`, hành động hiện tại bị dừng và controller chờ arm lại.
 
 ## Ánh xạ chuyển động
 
@@ -171,7 +171,7 @@ tbe4_face_recognition/
 Kiểm thử tự động không cần webcam hay Gazebo:
 
 - Adapter FER chọn nhãn/confidence đúng, xử lý không mặt/nhiều mặt và không import model khi test pure logic.
-- Filter chỉ ổn định nhãn sau thời gian quy định, reset khi frame gap hoặc confidence thấp và không latch nhiễu.
+- Filter đưa nhãn hợp lệ ra ngay, từ chối confidence không lớn hơn `0.60`, và reset an toàn khi frame gap hoặc transport lỗi.
 - State machine kích hoạt đúng một lần, yêu cầu re-arm, ưu tiên neutral/unknown stop, không queue lệnh, không tự chạy lệnh từng bị chặn do thiếu odometry và hoàn tất preview theo quy ước.
 - Protocol dừng khi observation hết hạn, từ chối sequence trùng/lùi trong cùng session và reset an toàn khi recognition node tạo session mới.
 - Motion mô phỏng hoàn thành đúng khoảng cách/góc, xử lý yaw wrap, giới hạn vận tốc và dừng khi timeout/odom lỗi.

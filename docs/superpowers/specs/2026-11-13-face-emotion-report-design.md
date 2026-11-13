@@ -32,7 +32,7 @@ dung kỹ thuật phải được viết lại cho bài nhận diện biểu c�
 1. Trang bìa, mục tiêu và yêu cầu bài thực hành.
 2. Kiến trúc hai node ROS 2, topic JSON, `/odom` và `/cmd_vel`.
 3. Nhận diện khuôn mặt qua webcam bằng OpenCV và FER/TFLite.
-4. Chuẩn hóa observation, lọc confidence, ổn định theo thời gian và watchdog.
+4. Chuẩn hóa observation, ngưỡng confidence lớn hơn 60%, xử lý tức thời và watchdog.
 5. State machine one-shot, preview mặc định và điều kiện re-arm.
 6. Năm profile chuyển động dùng odometry và hành vi dừng của `neutral`.
 7. Cấu trúc package, launch, YAML, virtualenv và quy trình chạy simulator.

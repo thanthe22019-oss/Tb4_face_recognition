@@ -139,7 +139,7 @@ git commit -m "docs: explain face emotion recognition architecture"
 
 - [ ] **Step 1: Explain filtering with exact thresholds**
 
-Document confidence `0.55`, stable duration `0.5 s`, neutral/unknown re-arm `0.75 s`, observation timeout `0.75 s`, session/sequence handling, and immediate unsafe-observation stop reasons.
+Document strict confidence above `0.60`, zero temporal delay, immediate neutral re-arm, unknown/no-face re-arm `0.75 s`, observation timeout `0.75 s`, session/sequence handling, and immediate unsafe-observation stop reasons.
 
 - [ ] **Step 2: Draw the behavior state machine**
 

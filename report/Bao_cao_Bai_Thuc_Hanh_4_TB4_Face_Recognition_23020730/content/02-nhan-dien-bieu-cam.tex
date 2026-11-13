@@ -39,7 +39,8 @@ là \path{/dev/video0}, độ phân giải yêu cầu $640\times480$ và buffer 
   \item FER trả danh sách khuôn mặt và score; adapter tạo danh sách
         \texttt{DetectedFace} đã xác thực.
   \item Nếu đúng một khuôn mặt, observation mang nhãn và confidence của khuôn
-        mặt đó. Nếu không có hoặc có nhiều khuôn mặt, observation mang
+        mặt đó; controller xử lý ngay khi confidence lớn hơn 0,60. Nếu không
+        có hoặc có nhiều khuôn mặt, observation mang
         \texttt{unknown}, confidence 0 và đúng \texttt{face\_count}.
   \item Observation mới được publish lên \path{/emotion_observation}; frame
         vẫn có thể hiển thị ở 20~Hz giữa hai lần inference.

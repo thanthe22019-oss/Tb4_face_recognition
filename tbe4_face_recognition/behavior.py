@@ -32,10 +32,10 @@ class BehaviorController:
         if type(preview_only) is not bool:
             raise TypeError('preview_only must be a boolean')
         self.preview_only = preview_only
-        self.state = 'DISARMED'
+        self.state = 'ARMED'
         self.stable_emotion = None
         self.active_action = None
-        self.reason = 'startup'
+        self.reason = 'startup_armed'
         self.last_time = None
 
     def _valid_time(self, now):

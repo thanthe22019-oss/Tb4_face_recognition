@@ -183,8 +183,8 @@ class EmotionControllerNode(Node):
         defaults = {
             'preview_only': True,
             'rate_hz': 20.0,
-            'confidence_threshold': 0.55,
-            'stable_seconds': 0.5,
+            'confidence_threshold': 0.60,
+            'stable_seconds': 0.0,
             'rearm_seconds': 0.75,
             'observation_timeout': 0.75,
             'odom_timeout': 0.5,

@@ -10,9 +10,9 @@ TurtleBot~4. Sáu trạng thái cần xử lý là \textit{happy}, \textit{sad},
 trạng thái được ánh xạ tới một hành vi đơn giản: cong trái, cong phải, dừng,
 lùi, xoay tròn hoặc tiến.
 
-Ngoài việc ánh xạ đúng nhãn, hệ thống phải tránh cho robot phản ứng trực tiếp
-với nhiễu của mô hình AI. Một biểu cảm cần ổn định trong một khoảng thời gian
-trước khi kích hoạt; mỗi kích hoạt chỉ được thực hiện một lần; mất khuôn mặt,
+Theo yêu cầu vận hành cuối cùng, hệ thống xử lý ngay observation đầu tiên khi
+có đúng một khuôn mặt và confidence lớn hơn 0,60; không dùng cửa sổ ổn định
+theo thời gian. Mỗi kích hoạt vẫn chỉ được thực hiện một lần; mất khuôn mặt,
 mất kết quả inference hoặc mất odometry phải đưa vận tốc về không. Chế độ
 \texttt{preview\_only=true} được bật mặc định để kiểm tra camera và logic mà
 không làm robot chuyển động.

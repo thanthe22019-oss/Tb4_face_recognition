@@ -3,8 +3,8 @@ emotion_controller_node:
     preview_only: true
     use_sim_time: false
     rate_hz: 20.0
-    confidence_threshold: 0.55
-    stable_seconds: 0.5
+    confidence_threshold: 0.60
+    stable_seconds: 0.0
     rearm_seconds: 0.75
     observation_timeout: 0.75
     odom_timeout: 0.5

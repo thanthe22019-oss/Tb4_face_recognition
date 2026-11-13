@@ -1,14 +1,15 @@
 \clearpage
-\section*{3. Lọc biểu cảm và state machine one-shot}
-\addcontentsline{toc}{section}{3. Lọc biểu cảm và state machine one-shot}
+\section*{3. Lọc confidence và state machine one-shot}
+\addcontentsline{toc}{section}{3. Lọc confidence và state machine one-shot}
 
-\subsection*{3.1. Tại sao cần lọc theo thời gian?}
+\subsection*{3.1. Lọc tức thời và kiểm tra freshness}
 
 Output của mô hình cảm xúc có thể thay đổi giữa hai frame liên tiếp do ánh
-sáng, góc mặt hoặc biểu cảm chuyển tiếp. Nếu mỗi nhãn được nối trực tiếp với
-\path{/cmd_vel}, robot có thể đổi hướng liên tục. Module
-\texttt{EmotionFilter} vì vậy tách ba khái niệm: observation mới từ transport,
-ứng viên đang tích lũy thời gian và biểu cảm đã ổn định.
+sáng, góc mặt hoặc biểu cảm chuyển tiếp. Theo yêu cầu cuối cùng, module
+\texttt{EmotionFilter} không chờ nhiều frame: nhãn của đúng một khuôn mặt được
+đưa ra ngay khi confidence lớn hơn 0,60. State machine one-shot vẫn ngăn cùng
+một biểu cảm lặp hành động liên tục, còn session/sequence và watchdog kiểm soát
+độ mới của dữ liệu.
 
 Một observation chỉ hợp lệ để làm mới heartbeat khi sequence tăng nghiêm ngặt
 trong session hiện tại. Sequence trùng hoặc lùi sinh reason
@@ -25,7 +26,7 @@ Filter chuẩn hóa theo thứ tự an toàn sau:
   \item \texttt{face\_count} khác 1: \texttt{unknown/multiple\_faces};
   \item nhãn \texttt{disgust}: \texttt{unknown/unsupported\_emotion};
   \item nhãn ngoài contract: \texttt{unknown/unknown\_emotion};
-  \item confidence dưới 0,55: \texttt{unknown/low\_confidence};
+  \item confidence không lớn hơn 0,60: \texttt{unknown/low\_confidence};
   \item còn lại: giữ nhãn điều khiển.
 \end{enumerate}
 
@@ -37,19 +38,19 @@ mặc định được đặt trong \path{config/controller.yaml}:
 \begin{tabular}{@{}p{0.38\textwidth}p{0.18\textwidth}p{0.36\textwidth}@{}}
 \toprule
 \textbf{Tham số} & \textbf{Giá trị} & \textbf{Ý nghĩa} \\ \midrule
-\texttt{confidence\_threshold} & 0,55 & Confidence tối thiểu cho một mặt. \\
-\texttt{stable\_seconds} & 0,50~s & Thời gian ổn định của biểu cảm hành động. \\
-\texttt{rearm\_seconds} & 0,75~s & Thời gian neutral/unknown để arm lại. \\
+\texttt{confidence\_threshold} & 0,60 & Confidence phải lớn hơn ngưỡng này. \\
+\texttt{stable\_seconds} & 0,00~s & Xử lý nhãn hợp lệ ngay lập tức. \\
+\texttt{rearm\_seconds} & 0,75~s & Thời gian unknown/no-face để arm lại. \\
 \texttt{observation\_timeout} & 0,75~s & Khoảng tối đa không có sequence mới. \\
 \texttt{odom\_timeout} & 0,50~s & Tuổi tối đa của odometry. \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Khi nhãn chuẩn hóa đổi, candidate và thời điểm bắt đầu được đặt lại. Một nhãn
-non-neutral trở thành stable sau 0,5~s liên tục. Neutral và unknown cần 0,75~s
-vì chúng còn đóng vai trò xác nhận người dùng đã rời biểu cảm trước đó để hệ
-thống được phép nhận một trigger mới.
+Happy, sad, neutral, angry, surprise hoặc fear trở thành stable ngay trong cùng
+observation khi confidence lớn hơn 0,60. Neutral re-arm ngay. Riêng
+unknown/no-face vẫn cần kéo dài 0,75~s trước khi re-arm để một frame mất mặt
+ngắn không mở lại latch ngoài ý muốn.
 
 \subsection*{3.3. State machine one-shot}
 
@@ -66,9 +67,9 @@ thống được phép nhận một trigger mới.
   \node[state,below=2.4cm of armed] (executing) {EXECUTING\\đang chạy profile};
 
   \draw[arrow] (disarmed) -- node[label,above]
-    {neutral/unknown\\ổn định 0,75 s} (armed);
+    {neutral $>0{,}60$ ngay\\hoặc unknown 0,75 s} (armed);
   \draw[arrow] (armed) -- node[label,right]
-    {biểu cảm hành động\\ổn định 0,5 s} (executing);
+    {biểu cảm hành động\\confidence $>0{,}60$} (executing);
   \draw[arrow] (executing) -- node[label,below left]
     {hoàn tất, lỗi, timeout\\hoặc biểu cảm khác} (disarmed);
   \draw[arrow] (armed) to[bend left=40] node[label,above]
@@ -80,14 +81,15 @@ thống được phép nhận một trigger mới.
 \end{figure}
 
 Ánh xạ biểu cảm non-neutral được lưu cố định trong
-\texttt{ACTION\_BY\_EMOTION}. Khi state là \texttt{ARMED} và filter báo một
-stable emotion mới, state machine trả về đúng một \texttt{start\_action}. Khi
+\texttt{ACTION\_BY\_EMOTION}. Controller khởi động ở state \texttt{ARMED} để
+biểu cảm hợp lệ đầu tiên có thể chạy ngay. Khi filter báo một stable emotion
+mới, state machine trả về đúng một \texttt{start\_action}. Khi
 profile hoàn thành, state trở lại \texttt{DISARMED}; giữ nguyên nét mặt không
 thể tự chạy lần nữa. Hệ thống không lưu action chờ, vì vậy một biểu cảm khác
-trong lúc robot chạy chỉ hủy profile hiện tại sau khi nó ổn định, không nối
-tiếp thành chuỗi ngoài ý muốn.
+trong lúc robot chạy hủy profile hiện tại ngay khi confidence vượt ngưỡng,
+không nối tiếp thành chuỗi ngoài ý muốn.
 
-Neutral là lệnh dừng và re-arm. Unknown an toàn cũng có thể re-arm sau 0,75~s,
+Neutral hợp lệ là lệnh dừng và re-arm ngay. Unknown có thể re-arm sau 0,75~s,
 giúp người dùng chỉ cần rời khỏi camera giữa hai lần điều khiển. Payload lỗi,
 session mới và timeout đều hủy chuyển động nhưng không tự kích hoạt hành động
 khi dữ liệu quay trở lại.

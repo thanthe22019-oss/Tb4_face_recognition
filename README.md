@@ -68,7 +68,7 @@ Chỉ chạy một publisher điều khiển robot. Không mở teleop, Nav2 ho�
 
 ## Ánh xạ biểu cảm
 
-Biểu cảm phải ổn định 0,5 giây. Một hành động chỉ chạy một lần; cần giữ Neutral hoặc mất mặt đủ 0,75 giây để re-arm.
+Khi có đúng một khuôn mặt và confidence lớn hơn 0,60, biểu cảm được xử lý ngay ở observation đầu tiên. Một hành động chỉ chạy một lần; Neutral hợp lệ re-arm ngay, hoặc mất mặt đủ 0,75 giây để re-arm.
 
 | Biểu cảm | Hành động mặc định |
 | --- | --- |
@@ -79,7 +79,7 @@ Biểu cảm phải ổn định 0,5 giây. Một hành động chỉ chạy m�
 | Surprise | Xoay trái đủ 360°, tối đa 0,40 rad/s |
 | Fear | Tiến 0,20 m, tối đa 0,10 m/s |
 
-`disgust`, confidence dưới 0,55, không có mặt hoặc nhiều mặt đều dừng/không kích hoạt. Observation quá 0,75 giây hoặc odometry quá 0,5 giây cũng đưa `/cmd_vel` về zero. Thông số nằm trong `config/controller.yaml` và `config/recognition.yaml`.
+`disgust`, confidence không lớn hơn 0,60, không có mặt hoặc nhiều mặt đều dừng/không kích hoạt. Observation quá 0,75 giây hoặc odometry quá 0,5 giây cũng đưa `/cmd_vel` về zero. Thông số nằm trong `config/controller.yaml` và `config/recognition.yaml`.
 
 ## Quan sát topic
 
@@ -114,6 +114,6 @@ Kiểm thử webcam và simulator được ghi riêng trong `docs/acceptance.md`
 - `odometry_ready=false`: kiểm tra `/odom`, simulator/robot và domain DDS trước khi bật motion.
 - Robot không chạy trong preview: đây là hành vi đúng; dùng `preview_only:=false` sau khi đã kiểm tra.
 - Robot nhận nhiều nguồn lệnh: dừng teleop/Nav2/interaction cũ rồi chỉ mở một phiên.
-- Nhận diện dao động: giữ một khuôn mặt đủ sáng, nhìn thẳng webcam và chờ qua ngưỡng ổn định.
+- Nhận diện dao động: giữ một khuôn mặt đủ sáng và nhìn thẳng webcam; hệ thống phản ứng ngay khi confidence vượt 0,60.
 
 Thiết kế và implementation plan nằm trong `docs/superpowers/`.

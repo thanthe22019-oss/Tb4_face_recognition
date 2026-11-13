@@ -1,5 +1,7 @@
 # TurtleBot 4 Face Emotion Control Implementation Plan
 
+> **Behavior update (2026-11-13):** The original 0.5-second stabilization design was superseded by the user's request to execute the first single-face observation whose confidence is greater than 0.60. One-shot/re-arm and all watchdog protections remain active.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a standalone ROS 2 Humble package that recognizes six facial expressions from a laptop webcam and safely executes the corresponding TurtleBot 4 `/cmd_vel` motion once per stable expression.
@@ -128,11 +130,11 @@ git commit -m "feat: add isolated FER emotion adapter"
 **Interfaces:**
 - Consumes: `Observation` from Task 1.
 - Produces: `FilterResult(normalized: str, stable_emotion: str | None, changed: bool, stop_reason: str | None)`.
-- Produces: `EmotionFilter(confidence_threshold: float = 0.55, stable_seconds: float = 0.5, rearm_seconds: float = 0.75, max_observation_gap: float = 0.75)` with `observe(observation: Observation, now: float) -> FilterResult`, `tick(now: float) -> FilterResult | None`, and `reset() -> None`.
+- Produces: `EmotionFilter(confidence_threshold: float = 0.60, stable_seconds: float = 0.0, rearm_seconds: float = 0.75, max_observation_gap: float = 0.75)` with `observe(observation: Observation, now: float) -> FilterResult`, `tick(now: float) -> FilterResult | None`, and `reset() -> None`.
 
 - [ ] **Step 1: Write filter tests for stability and all safety inputs**
 
-Cover stable emotion only after `0.5 s`, candidate reset on label change, neutral/unknown stable after `0.75 s`, non-finite/backward time rejection, stale observation timeout and session/sequence rules. Add `test_invalid_face_observations_request_immediate_stop` for no face, multiple faces, low confidence and `disgust`.
+Cover immediate stable emotion above `0.60`, immediate neutral, unknown re-arm after `0.75 s`, non-finite/backward time rejection, stale observation timeout and session/sequence rules. Add `test_invalid_face_observations_request_immediate_stop` for no face, multiple faces, confidence at or below `0.60`, and `disgust`.
 
 - [ ] **Step 2: Run the focused tests and verify failure**
 

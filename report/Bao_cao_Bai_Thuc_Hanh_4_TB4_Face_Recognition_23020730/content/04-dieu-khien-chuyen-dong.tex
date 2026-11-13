@@ -81,8 +81,8 @@ hoặc exception, controller xóa \texttt{MotionExecutor} và publish zero Twist
 \begin{center}
 \begin{tabular}{@{}p{0.35\textwidth}p{0.57\textwidth}@{}}
 \toprule \textbf{Điều kiện} & \textbf{Phản ứng} \\ \midrule
-Neutral/unknown ổn định & Hủy motion, zero Twist và arm lại. \\
-No face/multiple faces/low confidence & Dừng tức thời, chờ unknown ổn định. \\
+Neutral có confidence $>0{,}60$ & Hủy motion, zero Twist và arm lại ngay. \\
+No face/multiple faces/low confidence & Dừng tức thời; unknown 0,75~s mới re-arm. \\
 Observation quá 0,75~s & \texttt{observation\_timeout}, zero Twist. \\
 Odometry quá 0,50~s & \texttt{odometry\_unavailable}, zero Twist. \\
 Timestamp lùi hoặc pose nhảy & \texttt{odom\_reset}/\texttt{odom\_jump}. \\
