@@ -1,1 +1,107 @@
-% Nội dung được bổ sung ở Task 4.
+\clearpage
+\section*{6. Kiểm thử và kết quả}
+\addcontentsline{toc}{section}{6. Kiểm thử và kết quả}
+
+\subsection*{6.1. Phương pháp kiểm thử tự động}
+
+Test được viết bằng pytest, tách khỏi webcam và simulator bằng fake FER detector,
+mô phỏng số profile chuyển động và lớp \texttt{ControlCore} không phụ thuộc
+ROS callback. Các nhóm chính gồm:
+
+\begin{itemize}[leftmargin=1cm,itemsep=0.15em]
+  \item protocol JSON: round-trip và từ chối payload/kiểu/giá trị sai;
+  \item FER adapter: nhãn lớn nhất, số mặt, score, list/tuple và NumPy box;
+  \item filter: confidence $>0,60$ xử lý ngay, session/sequence và watchdog;
+  \item behavior: sáu ánh xạ, one-shot, preview, re-arm và thiếu odometry;
+  \item motion: tiến/lùi/cung/xoay, yaw wrap, speed limit và timeout;
+  \item ROS adapter/asset: quaternion, zero Twist, launch/config và script.
+\end{itemize}
+
+Lệnh xác minh:
+
+\begin{svcode}
+cd ~/Interaction/tbe4_face_recognition
+source /opt/ros/humble/setup.bash
+pytest -q
+colcon build --base-paths . --packages-select tbe4_face_recognition \
+  --symlink-install
+source install/setup.bash
+colcon test --base-paths . --packages-select tbe4_face_recognition
+colcon test-result --verbose
+\end{svcode}
+
+\subsection*{6.2. Kết quả đã xác minh}
+
+Trên commit ứng dụng \texttt{c35bdd5}, pytest báo 102 test pass. Colcon build
+thành công và \texttt{colcon test-result --verbose} báo 102 test, 0 lỗi,
+0 thất bại, 0 bỏ qua cho cùng phiên bản phản ứng tức thời.
+Smoke test webcam thật ở chế độ headless chạy 12~giây, tạo session
+\texttt{c8c5d1ad}, nạp TensorFlow Lite XNNPACK và thoát sạch bằng SIGINT. Test
+này xác nhận camera/FER không còn crash do NumPy bounding box; nó không chứng
+minh độ chính xác của sáu nhãn.
+
+\begin{longtable}{@{}p{0.34\textwidth}p{0.18\textwidth}p{0.40\textwidth}@{}}
+\toprule \textbf{Hạng mục} & \textbf{Trạng thái} & \textbf{Bằng chứng} \\ \midrule
+\endfirsthead
+\toprule \textbf{Hạng mục} & \textbf{Trạng thái} & \textbf{Bằng chứng} \\ \midrule
+\endhead
+Pytest logic/package & PASS & 102 passed, 0 failed. \\
+Build package & PASS & Colcon build tạo install prefix hợp lệ. \\
+Colcon package tests & PASS & 102 tests, 0 errors, 0 failures, 0 skipped. \\
+FER với webcam thật, headless & PASS & Chạy 12~giây, không exception, thoát sạch. \\
+Overlay GUI thời gian thực & PENDING & Cần ảnh cửa sổ sau thay đổi confidence. \\
+Sáu nhãn biểu cảm & PENDING & Chưa có bộ ảnh/video đối chiếu từng nhãn. \\
+Năm profile chuyển động & PENDING & Chưa có video/log simulator cho từng profile. \\
+Neutral/no-face/odom stop & PENDING & Cần thử khi robot đang chuyển động. \\
+Robot TurtleBot 4 thật & PENDING & Chưa nghiệm thu phần cứng. \\
+\bottomrule
+\end{longtable}
+
+\reportfigure{13_kiem_thu_tu_dong.png}{Terminal hiển thị kết quả pytest và colcon test cuối cùng.}
+
+\subsection*{6.3. Các lỗi đã gặp và cách xử lý}
+
+\textbf{Camera không xuất hiện.} Ban đầu OpenCV báo không mở được
+\path{/dev/video0}. Kiểm tra hệ điều hành không thấy \path{/dev/video*}; nguyên
+nhân là E-shutter trên laptop đang tắt. Sau khi bật switch, Ubuntu tạo
+\path{/dev/video0} và \path{/dev/video1}.
+
+\textbf{FER box không đúng kiểu giả định.} Webcam mở thành công nhưng node
+thoát với lỗi ``FER box must contain four integers''. Source FER trả một hàng
+\texttt{numpy.ndarray} từ \texttt{detectMultiScale}, trong khi adapter chỉ
+chấp nhận container list/tuple. Regression test dùng \texttt{np.int32} box đã
+tái hiện lỗi; adapter hiện chuyển iterable box thành tuple và vẫn kiểm tra bốn
+phần tử nguyên dương.
+
+\textbf{Độ trễ nhận lệnh.} Thiết kế ban đầu yêu cầu nhãn ổn định 0,5~s. Theo
+yêu cầu cuối, ngưỡng đổi thành confidence lớn hơn 0,60 và
+\texttt{stable\_seconds=0}; controller khởi động armed để observation hợp lệ
+đầu tiên có thể thực hiện ngay. One-shot, re-arm và watchdog vẫn được giữ.
+
+\textbf{Cảnh báo SciPy/NumPy.} Môi trường hiện in cảnh báo SciPy hệ thống mong
+NumPy nhỏ hơn 1.25 trong khi virtualenv dùng NumPy~1.26.4. Cảnh báo không làm
+FER/TFLite dừng trong smoke test; báo cáo không coi đây là bằng chứng tương
+thích cho mọi chức năng SciPy ngoài đường inference đã chạy.
+
+\subsection*{6.4. Ma trận nghiệm thu thủ công}
+
+\begin{longtable}{@{}p{0.46\textwidth}p{0.18\textwidth}p{0.28\textwidth}@{}}
+\toprule \textbf{Ca kiểm thử} & \textbf{Trạng thái} & \textbf{Minh chứng cần có} \\ \midrule
+\endfirsthead
+\toprule \textbf{Ca kiểm thử} & \textbf{Trạng thái} & \textbf{Minh chứng cần có} \\ \midrule
+\endhead
+Overlay hiển thị box/nhãn/confidence/status & PENDING & Ảnh 02. \\
+Nhận đủ happy, sad, neutral, angry, surprise, fear & PENDING & Ảnh 03 hoặc video. \\
+Preview luôn zero Twist & PENDING & Ảnh 05. \\
+Happy cong trái và Sad cong phải & PENDING & Ảnh 06--07. \\
+Angry lùi, Surprise xoay, Fear tiến & PENDING & Ảnh 08--10. \\
+Neutral/no-face dừng robot & PENDING & Ảnh 11. \\
+Mất odometry dừng robot & PENDING & Ảnh 12. \\
+Chỉ một publisher \path{/cmd_vel} & PENDING & Topic info trong video/ảnh. \\
+Repository public & PASS & \url{https://github.com/thanthe22019-oss/Tb4_face_recognition}. \\
+Video demo & PENDING & Chưa có URL video. \\
+\bottomrule
+\end{longtable}
+
+Các trạng thái PENDING không được diễn giải thành thất bại của thuật toán, nhưng
+cũng không được dùng để tuyên bố hệ thống đã nghiệm thu end-to-end.

@@ -1,1 +1,127 @@
-% Nội dung được bổ sung ở Task 4.
+\clearpage
+\section*{5. Cài đặt và vận hành}
+\addcontentsline{toc}{section}{5. Cài đặt và vận hành}
+
+\subsection*{5.1. Yêu cầu môi trường}
+
+Máy phát triển dùng Ubuntu~22.04, ROS~2 Humble và Python~3.10. Package cần
+\texttt{rclpy}, \texttt{geometry\_msgs}, \texttt{nav\_msgs},
+\texttt{std\_msgs}, TurtleBot~4 Ignition bringup và webcam V4L2. Simulator
+hoặc robot thật phải cung cấp \path{/odom}; controller không dùng simulation
+time vì mọi timeout an toàn được đo bằng wall time.
+
+Các dependency AI được cài trong virtualenv riêng:
+
+\begin{svcode}
+cd ~/Interaction/tbe4_face_recognition
+./scripts/setup_face_venv.sh
+./scripts/build.sh
+\end{svcode}
+
+\texttt{setup\_face\_venv.sh} kết thúc bằng import check cho FER, TensorFlow,
+OpenCV, NumPy và \texttt{rclpy}. \texttt{build.sh} source ROS Humble rồi gọi
+Colcon với \texttt{--symlink-install}. Không lệnh nào dùng \texttt{sudo pip}.
+
+\subsection*{5.2. Kiểm tra webcam trước}
+
+Trên Lenovo Legion 5 dùng trong bài, camera có E-shutter. Nếu hệ điều hành
+không thấy camera, cần bật công tắc camera ở cạnh máy và xác nhận:
+
+\begin{svcode}
+ls -l /dev/video*
+\end{svcode}
+
+Sau đó chạy recognition độc lập:
+
+\begin{svcode}
+cd ~/Interaction/tbe4_face_recognition
+./scripts/run_recognition.sh
+\end{svcode}
+
+Camera khác có thể chọn bằng \texttt{camera\_index:=1}; máy không có màn hình
+có thể truyền \texttt{show\_window:=false}. Cửa sổ phải hiển thị box, nhãn,
+confidence và status; nhấn \texttt{Q} hoặc Ctrl+C để thoát. Hệ thống phản ứng
+ngay khi confidence lớn hơn 0,60, vì vậy cần bảo đảm chỉ có một người trong
+khung hình trước khi bật motion.
+
+\subsection*{5.3. Khởi chạy TurtleBot 4 Simulator}
+
+Simulator chạy ở terminal riêng, không mở Nav2, SLAM hoặc localization:
+
+\begin{svcode}
+cd ~/Interaction/tbe4_face_recognition
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 launch tbe4_face_recognition simulation.launch.py
+\end{svcode}
+
+Sau khi robot và dock xuất hiện, gửi action undock ở terminal thứ hai:
+
+\begin{svcode}
+source /opt/ros/humble/setup.bash
+source ~/Interaction/tbe4_face_recognition/install/setup.bash
+ros2 action send_goal /undock irobot_create_msgs/action/Undock '{}' --feedback
+\end{svcode}
+
+Chỉ tiếp tục khi action báo \texttt{SUCCEEDED}, \path{/odom} cập nhật và robot
+đang ở vùng trống.
+
+\subsection*{5.4. Preview rồi mới bật chuyển động}
+
+Lần chạy đầu giữ mặc định preview:
+
+\begin{svcode}
+cd ~/Interaction/tbe4_face_recognition
+./scripts/run_interaction.sh
+\end{svcode}
+
+Trong preview, kiểm tra \path{/emotion_behavior_status} có
+\texttt{odometry\_ready=true}, từng nhãn đúng với biểu cảm và
+\path{/cmd_vel} luôn bằng zero. Sau đó dừng phiên bằng Ctrl+C và bật motion một
+cách rõ ràng:
+
+\begin{svcode}
+./scripts/run_interaction.sh preview_only:=false
+\end{svcode}
+
+Controller bắt đầu ở trạng thái armed. Observation đầu tiên có đúng một khuôn
+mặt và confidence lớn hơn 0,60 có thể kích hoạt ngay, do đó người vận hành chỉ
+nên nhìn vào camera sau khi robot đã undock và khu vực được dọn trống. Sau một
+hành động, đưa mặt về Neutral có confidence lớn hơn 0,60 hoặc rời camera đủ
+0,75~s trước khi tạo biểu cảm tiếp theo.
+
+\subsection*{5.5. Quan sát topic và đóng chương trình}
+
+\begin{svcode}
+ros2 topic echo /emotion_observation
+ros2 topic echo /emotion_behavior_status
+ros2 topic echo /cmd_vel
+ros2 topic hz /odom
+ros2 topic info /cmd_vel --verbose
+\end{svcode}
+
+Không chạy teleop, Nav2 hoặc một interaction controller thứ hai cùng lúc. Khi
+kết thúc, nhấn \texttt{Q} ở cửa sổ hoặc Ctrl+C ở launch. Controller publish
+zero Twist trước khi destroy node; camera được release trong cleanup.
+
+\subsection*{5.6. Xử lý lỗi thường gặp}
+
+\begin{longtable}{@{}p{0.33\textwidth}p{0.63\textwidth}@{}}
+\toprule \textbf{Hiện tượng} & \textbf{Kiểm tra} \\ \midrule
+\endfirsthead
+\toprule \textbf{Hiện tượng} & \textbf{Kiểm tra} \\ \midrule
+\endhead
+Không có \path{/dev/video0} & Bật E-shutter/camera switch, kiểm tra
+\texttt{ls -l /dev/video*}, rồi thử đúng camera index. \\
+Thiếu FER/TensorFlow & Chạy lại \path{scripts/setup_face_venv.sh}; không cài
+vào Python hệ thống. \\
+Confidence không vượt 0,60 & Tăng ánh sáng, nhìn thẳng camera và bảo đảm chỉ
+có một khuôn mặt. \\
+\texttt{odometry\_ready=false} & Kiểm tra simulator/robot, \path{/odom} và
+ROS domain trước khi bật motion. \\
+Robot không chạy trong preview & Đây là hành vi đúng; dừng phiên rồi truyền
+\texttt{preview\_only:=false}. \\
+Robot nhận nhiều nguồn lệnh & Dừng teleop, Nav2 hoặc interaction cũ; chỉ giữ
+một publisher điều khiển. \\
+\bottomrule
+\end{longtable}

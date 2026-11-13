@@ -41,10 +41,10 @@ dung kỹ thuật phải được viết lại cho bài nhận diện biểu c�
 
 ## Bằng chứng được phép sử dụng
 
-- Có thể ghi nhận: commit `44c841f`, 101 pytest pass, colcon build thành công,
-  colcon test có 101 test, 0 lỗi, 0 thất bại, 0 bỏ qua; package prefix và ba
+- Có thể ghi nhận: commit `c35bdd5`, 102 pytest pass, colcon build thành công,
+  colcon test có 102 test, 0 lỗi, 0 thất bại, 0 bỏ qua; package prefix và ba
   launch description đã được ROS 2 nạp bằng `--show-args`.
-- Các kết quả trên đã được xác minh trên nhánh `main` cục bộ.
+- Các kết quả trên đã được xác minh trực tiếp tại commit ứng dụng `c35bdd5`.
 - Không được tuyên bố FER đã nhận đúng sáu biểu cảm, webcam đã chạy ổn định,
   robot đã hoàn thành quỹ đạo hoặc các cơ chế dừng đã qua nghiệm thu simulator
   khi chưa có ảnh/video/log thật.
