@@ -22,6 +22,7 @@ setup(
         (os.path.join('share', PACKAGE_NAME, 'config'), glob('config/*.yaml')),
     ],
     install_requires=['setuptools'],
+    tests_require=['pytest'],
     zip_safe=True,
     maintainer='thanthe22019-oss',
     maintainer_email='232276355+thanthe22019-oss@users.noreply.github.com',
@@ -36,4 +37,3 @@ setup(
         ],
     },
 )
-
